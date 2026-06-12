@@ -1,0 +1,210 @@
+{
+  "name": "botopink",
+  "displayName": "Botopink",
+  "description": "Support for the Botopink programming language",
+  "version": "0.3.0",
+  "publisher": "botopink",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/botopink/botopink-lang"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "icon": "images/icon.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "botopink",
+        "aliases": [
+          "Botopink",
+          "botopink"
+        ],
+        "extensions": [
+          ".bp"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/botopink-logo.png",
+          "dark": "./images/botopink-logo.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "botopink",
+        "scopeName": "source.botopink",
+        "path": "./syntaxes/botopink.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.botopink.codeblock",
+        "path": "./syntaxes/botopink.codeblock.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.botopink": "botopink"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "botopink",
+        "path": "./snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "botopink.restartServer",
+        "title": "Restart Botopink Server",
+        "category": "Botopink"
+      },
+      {
+        "command": "botopink.selectTarget",
+        "title": "Select Codegen Target",
+        "category": "Botopink"
+      },
+      {
+        "command": "botopink.run",
+        "title": "Run main",
+        "category": "Botopink"
+      },
+      {
+        "command": "botopink.runTest",
+        "title": "Run Test",
+        "category": "Botopink"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "botopink",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "enum": [
+              "check",
+              "build",
+              "test",
+              "format"
+            ],
+            "description": "The botopink CLI subcommand to run."
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "commonJS",
+              "erlang",
+              "beam",
+              "wasm"
+            ],
+            "description": "Codegen target for build/test. Defaults to the active target (botopink.json)."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Only run tests whose name contains this substring (test command)."
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "botopink",
+        "owner": "botopink",
+        "source": "botopink",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^error:\\s+(.*)\\s+at\\s+(.+):(\\d+):(\\d+)$",
+          "message": 1,
+          "file": 2,
+          "line": 3,
+          "column": 4
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "[botopink]": {
+        "editor.formatOnSave": true,
+        "editor.semanticHighlighting.enabled": true
+      }
+    },
+    "semanticTokenScopes": [
+      {
+        "language": "botopink",
+        "scopes": {
+          "keyword": ["keyword.control.botopink", "keyword.control", "keyword"],
+          "property": [
+            "variable.other.property.botopink",
+            "variable.other.property"
+          ],
+          "string": ["string.quoted.botopink", "string.quoted", "string"],
+          "number": ["constant.numeric.botopink", "constant.numeric"],
+          "operator": ["keyword.operator.botopink", "keyword.operator"]
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Botopink",
+      "properties": {
+        "botopink.path": {
+          "type": "string",
+          "default": null,
+          "description": "Path to the botopink-lsp executable. By default, the extension looks for botopink-lsp in the PATH; if set, this path is used instead.",
+          "scope": "machine"
+        },
+        "botopink.cliPath": {
+          "type": "string",
+          "default": null,
+          "description": "Path to the botopink CLI executable used by tasks, CodeLens run/test, and the Test Explorer. By default, the extension looks for botopink in the PATH; if set, this path is used instead.",
+          "scope": "machine"
+        },
+        "botopink.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces communication between VS Code and the Botopink language server."
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onLanguage:botopink",
+    "workspaceContains:**/botopink.json",
+    "workspaceContains:**/*.bp"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:package": "vsce package",
+    "pretest": "tsc -p ./ --noEmit",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/**/*.test.ts\"",
+    "format-check": "prettier \"./src/**/*.ts\" --check",
+    "format": "prettier \"./src/**/*.ts\" --write"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^2.29.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

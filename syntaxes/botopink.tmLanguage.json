@@ -1,0 +1,246 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Botopink",
+  "scopeName": "source.botopink",
+  "fileTypes": ["bp"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#attributes" },
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#constants" },
+    { "include": "#builtins" },
+    { "include": "#entity" },
+    { "include": "#operators" },
+    { "include": "#discards" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.module.botopink",
+          "match": "////.*$"
+        },
+        {
+          "name": "comment.line.documentation.botopink",
+          "match": "///.*$"
+        },
+        {
+          "name": "comment.line.double-slash.botopink",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "effect marker on generator/effectful fns: `*fn` / `pub *fn`",
+          "name": "keyword.operator.effect.botopink",
+          "match": "\\*(?=fn\\b)"
+        },
+        {
+          "name": "keyword.control.botopink",
+          "match": "\\b(if|else|case|loop|for|break|continue|yield|return|try|catch|throw|await)\\b"
+        },
+        {
+          "name": "keyword.declaration.botopink",
+          "match": "\\b(fn|val|var|pub|private|mod|struct|record|enum|interface|type|implement|extend|extends|delegate|declare|macro|use|from|import|new|opaque|const|default|derive|test|assert|syntax|comptime|auto|set|get|as)\\b"
+        },
+        {
+          "name": "constant.language.botopink",
+          "match": "\\b(true|false|null|Self)\\b"
+        }
+      ]
+    },
+    "attributes": {
+      "comment": "attribute blocks: `#[@external(erlang, \"math\", \"floor\"), …]`",
+      "name": "meta.attribute.botopink",
+      "begin": "#\\[",
+      "end": "\\]",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.attribute.botopink" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.attribute.botopink" }
+      },
+      "patterns": [
+        {
+          "name": "entity.name.function.attribute.botopink",
+          "match": "@[a-zA-Z_][A-Za-z0-9_]*"
+        },
+        { "include": "#strings" },
+        { "include": "#constants" }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "comment": "optional chaining — must precede the `?` and `..` rules",
+          "name": "keyword.operator.optional-chaining.botopink",
+          "match": "\\?\\."
+        },
+        {
+          "name": "keyword.operator.arrow.botopink",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.pipe.botopink",
+          "match": "\\|>"
+        },
+        {
+          "name": "keyword.operator.range.botopink",
+          "match": "\\.\\."
+        },
+        {
+          "name": "keyword.operator.comparison.botopink",
+          "match": "(==|!=|<=|>=|<|>)"
+        },
+        {
+          "name": "keyword.operator.logical.botopink",
+          "match": "(&&|\\|\\||!)"
+        },
+        {
+          "name": "keyword.operator.bitwise.botopink",
+          "match": "(<<|>>)"
+        },
+        {
+          "name": "keyword.operator.assignment.botopink",
+          "match": "(\\+=|=)"
+        },
+        {
+          "name": "keyword.operator.arithmetic.botopink",
+          "match": "(\\+|\\-|\\*|/|%)"
+        },
+        {
+          "name": "keyword.operator.optional.botopink",
+          "match": "\\?"
+        },
+        {
+          "name": "keyword.operator.other.botopink",
+          "match": "\\|"
+        }
+      ]
+    },
+    "strings": {
+      "comment": "Sub-language interiors (erika \"…\" SQL, html \"\"\"…\"\"\" DSL) are NOT scoped here — VSCode is a pure renderer of the LSP's semantic tokens, which override this `string.quoted` scope per-range (editor.semanticHighlighting.enabled is forced on for botopink in package.json). A plain string carries no semantic tokens and stays string-coloured. See modules/vscode-extension/AGENTS.md.",
+      "patterns": [
+        {
+          "name": "string.quoted.triple.botopink",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "patterns": [
+            { "include": "#interpolation" },
+            {
+              "name": "constant.character.escape.botopink",
+              "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[\"\\\\nrt0$])"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.botopink",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "include": "#interpolation" },
+            {
+              "name": "constant.character.escape.botopink",
+              "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[\"\\\\nrt0$])"
+            }
+          ]
+        }
+      ]
+    },
+    "interpolation": {
+      "comment": "string interpolation hole: `${ … }`",
+      "name": "meta.template.expression.botopink",
+      "begin": "\\$\\{",
+      "end": "\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.template-expression.begin.botopink" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.template-expression.end.botopink" }
+      },
+      "patterns": [{ "include": "$self" }]
+    },
+    "constants": {
+      "patterns": [
+        { "include": "#binary_number" },
+        { "include": "#octal_number" },
+        { "include": "#hexadecimal_number" },
+        { "include": "#float_number" },
+        { "include": "#decimal_number" },
+        {
+          "name": "support.type.primitive.botopink",
+          "match": "\\b(i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|string|void|never|any|unknown)\\b"
+        },
+        {
+          "name": "entity.name.type.botopink",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "binary_number": {
+      "name": "constant.numeric.binary.botopink",
+      "match": "\\b0[bB][01_]+\\b"
+    },
+    "octal_number": {
+      "name": "constant.numeric.octal.botopink",
+      "match": "\\b0[oO][0-7_]+\\b"
+    },
+    "hexadecimal_number": {
+      "name": "constant.numeric.hexadecimal.botopink",
+      "match": "\\b0[xX][0-9a-fA-F_]+\\b"
+    },
+    "float_number": {
+      "name": "constant.numeric.float.botopink",
+      "match": "\\b[0-9][0-9_]*(\\.[0-9][0-9_]*)?([eE][+\\-]?[0-9_]+)\\b|\\b[0-9][0-9_]*\\.[0-9][0-9_]*\\b"
+    },
+    "decimal_number": {
+      "name": "constant.numeric.decimal.botopink",
+      "match": "\\b[0-9][0-9_]*\\b"
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "comment": "builtin `@`-prefixed types — must precede the generic @ident rule",
+          "name": "support.type.builtin.botopink",
+          "match": "@(Expr|Result|Option|Iterator)\\b"
+        },
+        {
+          "name": "support.function.builtin.botopink",
+          "match": "@[a-zA-Z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "entity": {
+      "patterns": [
+        {
+          "match": "\\b(fn)\\s+([a-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.botopink" },
+            "2": { "name": "entity.name.function.botopink" }
+          }
+        },
+        {
+          "begin": "\\b([a-z_][A-Za-z0-9_]*)\\s*\\(",
+          "end": "\\)",
+          "beginCaptures": {
+            "1": { "name": "entity.name.function.botopink" }
+          },
+          "patterns": [
+            { "include": "$self" }
+          ]
+        },
+        {
+          "name": "variable.parameter.botopink",
+          "match": "\\b([a-z_][A-Za-z0-9_]*)\\s*:"
+        }
+      ]
+    },
+    "discards": {
+      "name": "comment.unused.botopink",
+      "match": "\\b_(?:[A-Za-z0-9_]+)?\\b"
+    }
+  }
+}

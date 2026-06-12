@@ -1,0 +1,163 @@
+{
+  "Function": {
+    "prefix": "fn",
+    "body": ["fn ${1:name}(${2:args}) -> ${3:type} {", "\t$0", "}"],
+    "description": "Private function"
+  },
+  "Public function": {
+    "prefix": "pub fn",
+    "body": ["pub fn ${1:name}(${2:args}) -> ${3:type} {", "\t$0", "}"],
+    "description": "Public exported function"
+  },
+  "Value binding": {
+    "prefix": "val",
+    "body": ["val ${1:name} = ${0:value};"],
+    "description": "Immutable value binding"
+  },
+  "Mutable variable": {
+    "prefix": "var",
+    "body": ["var ${1:name} = ${0:value};"],
+    "description": "Mutable variable binding"
+  },
+  "Public value": {
+    "prefix": "pub val",
+    "body": ["pub val ${1:NAME} = ${0:value};"],
+    "description": "Public exported value"
+  },
+  "Import": {
+    "prefix": "import",
+    "body": ["import { ${1:name} } from \"${2:module}\";"],
+    "description": "Named import"
+  },
+  "Import from std": {
+    "prefix": "importstd",
+    "body": ["import { ${1:list} } from \"std\";"],
+    "description": "Import a module from the std package"
+  },
+  "Test block": {
+    "prefix": "test",
+    "body": [
+      "test \"${1:description}\" {",
+      "\tval ${2:got} = $0;",
+      "\tassert ${2:got} == ${3:want}, \"${4:why}\";",
+      "}"
+    ],
+    "description": "Test block with an assertion"
+  },
+  "Assertion": {
+    "prefix": "assert",
+    "body": ["assert ${1:condition}, \"${0:message}\";"],
+    "description": "Assertion inside a test block"
+  },
+  "Effectful function": {
+    "prefix": "*fn",
+    "body": ["*fn ${1:name}(${2:args}) -> @Iterator<${3:T}> {", "\tyield $0", "}"],
+    "description": "Effectful / generator function (yields)"
+  },
+  "External declaration": {
+    "prefix": "external",
+    "body": [
+      "#[@external(${1:node}, \"${2:module}\", \"${3:symbol}\"),",
+      "  @external(${4:erlang}, \"${5:module}\", \"${6:symbol}\")]",
+      "pub declare fn ${7:name}(${8:args}) -> ${9:type};"
+    ],
+    "description": "Externally-implemented declare fn with per-target bindings"
+  },
+  "Record": {
+    "prefix": "record",
+    "body": ["record ${1:Name} {", "\t${2:field}: ${0:type},", "}"],
+    "description": "Record declaration (shorthand)"
+  },
+  "Struct": {
+    "prefix": "struct",
+    "body": [
+      "struct ${1:Name} {",
+      "\t${2:_field}: ${3:type} = ${4:default},",
+      "\tfn ${5:method}(self: Self) {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Struct declaration (shorthand)"
+  },
+  "Enum": {
+    "prefix": "enum",
+    "body": [
+      "enum ${1:Name} {",
+      "\t${2:Variant},",
+      "\t$0",
+      "}"
+    ],
+    "description": "Enum declaration (shorthand)"
+  },
+  "Interface": {
+    "prefix": "interface",
+    "body": [
+      "interface ${1:Name} {",
+      "\tfn ${2:method}(self: Self)$0",
+      "}"
+    ],
+    "description": "Interface declaration"
+  },
+  "Case expression": {
+    "prefix": "case",
+    "body": [
+      "case ${1:subject} {",
+      "\t${2:pattern} -> ${3:result};",
+      "\t_ -> ${0:fallback};",
+      "}"
+    ],
+    "description": "Pattern matching"
+  },
+  "If expression": {
+    "prefix": "if",
+    "body": ["if (${1:cond}) {", "\t$0", "}"],
+    "description": "Conditional"
+  },
+  "If-else expression": {
+    "prefix": "ifelse",
+    "body": [
+      "if (${1:cond}) {",
+      "\t${2:then}",
+      "} else {",
+      "\t${0:else}",
+      "}"
+    ],
+    "description": "Conditional with else"
+  },
+  "Loop over collection": {
+    "prefix": "loop",
+    "body": ["loop (${1:collection}) { ${2:item} ->", "\t$0", "};"],
+    "description": "Loop over a collection"
+  },
+  "Loop with break value": {
+    "prefix": "loopmap",
+    "body": [
+      "val ${1:result} = loop (${2:collection}) { ${3:item} ->",
+      "\tbreak ${0:value};",
+      "};"
+    ],
+    "description": "Map via loop + break"
+  },
+  "Comptime expression": {
+    "prefix": "comptime",
+    "body": ["comptime ${0:expr}"],
+    "description": "Compile-time evaluation"
+  },
+  "Try with catch": {
+    "prefix": "trycatch",
+    "body": ["val ${1:r} = try ${2:expr} catch ${0:fallback};"],
+    "description": "Error handling with fallback"
+  },
+  "Implement for record": {
+    "prefix": "implement",
+    "body": [
+      "val ${1:Name} = implement ${2:Interface} for ${3:Type} {",
+      "\tfn ${4:method}(self: Self) {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Implement an interface for a type"
+  }
+}

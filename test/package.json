@@ -1,0 +1,4 @@
+{
+  "//": "Marks the unit tests as ES modules so Node's native TypeScript runner loads them without the typeless-package reparse warning. The tests import the vscode-free leaf modules under ../src with explicit .ts extensions; no Electron host is required.",
+  "type": "module"
+}
