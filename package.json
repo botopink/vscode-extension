@@ -192,6 +192,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "vscode:package": "vsce package",
+    "package": "mkdir -p dist && vsce package -o dist/",
     "pretest": "tsc -p ./ --noEmit",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/**/*.test.ts\"",
     "format-check": "prettier \"./src/**/*.ts\" --check",

@@ -1,0 +1,34 @@
+# Push/PR CI for the VS Code extension. Single Linux runner — the pure-fn
+# test suite (`node --test test/**/*.test.ts`) has no platform dependency.
+# The full extension-host suite (needs xvfb + a VS Code download) is out of
+# scope here; this gate guards the TypeScript modules behind the extension.
+name: test
+
+on:
+  push:
+    branches: [main, feat]
+  pull_request:
+    branches: [main, feat]
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: npm ci
+        run: npm ci
+
+      - name: npm test
+        run: npm test

@@ -159,11 +159,39 @@ npm install                # one-time
 npm run compile            # tsc → out/extension.js
 npm run watch              # rebuild on change
 npm run vscode:package     # produces botopink-<version>.vsix
+npm run package            # same, but writes to dist/ (matches release.yml)
 ```
 
 Press <kbd>F5</kbd> in VS Code on this folder to launch the Extension
 Development Host. Make sure `botopink-lsp` is on `PATH` (or set
 `botopink.path` in the dev-host's settings).
+
+## Release pipeline (CI)
+
+Two workflows under `.github/workflows/`:
+
+| Workflow      | Trigger          | What                                                                  |
+| ------------- | ---------------- | --------------------------------------------------------------------- |
+| `test.yml`    | push / PR        | `npm ci && npm test` on ubuntu-22.04.                                 |
+| `release.yml` | tag push `v*`    | `package` → `publish-gh` → conditional `publish-marketplace`.         |
+
+**`VSCE_PAT` secret.** The `publish-marketplace` job is gated on
+`${{ secrets.VSCE_PAT != '' }}`. With the secret unset (fresh fork, contributor
+PR, any non-trusted runner), the job is **skipped, not failed**, and the tag
+push still produces a `.vsix` on the GitHub Release. To enable marketplace
+publishing on a trusted repo:
+
+1. Create a Personal Access Token at
+   <https://dev.azure.com/<organization>/_usersSettings/tokens> with the
+   `Marketplace › Manage` scope (publish includes packaging).
+2. Add the token under `Settings → Secrets and variables → Actions → New
+   repository secret` as `VSCE_PAT`.
+3. Re-run the latest `release.yml` workflow or push a new tag — the
+   `publish-marketplace` job now runs `vsce publish --packagePath dist/*.vsix
+   --pat $VSCE_PAT`.
+
+The marketplace publisher (`botopink` in `package.json`) must match the
+account the PAT belongs to.
 
 ## See also
 
