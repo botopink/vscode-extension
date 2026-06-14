@@ -223,7 +223,7 @@ both fields in the same edit that lands the release-worthy changes.
 [`./.github/workflows/release.yml`](./.github/workflows/release.yml)) are
 unaffected by this workflow; they're created manually when a marketplace
 publish is desired (see module-auto-tag spec Notes for the rationale).
-Spec: [`../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md`](../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md).
+Spec: [`../../tasks/v0.beta.18/specs/module-auto-tag.md`](../../tasks/v0.beta.18/specs/module-auto-tag.md).
 
 ## Local gate
 
