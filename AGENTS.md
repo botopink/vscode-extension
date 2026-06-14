@@ -92,7 +92,7 @@ vscode-extension/
 │   └── pathResolve.ts              ← resolveBinPath (CLI/LSP executable resolution)
 └── test/
     ├── package.json                ← `{"type":"module"}` for Node's native-TS test runner
-    └── unit.test.ts                ← 15 pure-function scenarios (no vscode host)
+    └── unit.test.ts                ← pure-function scenarios (no vscode host)
 ```
 
 ## Testing
@@ -141,9 +141,15 @@ the host file a one-line delegation so the tested code is the shipped code.
   surface keywords are the strings matched there. When you add or remove a
   keyword, update `syntaxes/botopink.tmLanguage.json`. Beyond plain
   keywords the grammar also scopes: `#[@external(…)]` attribute blocks,
-  the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`), the
-  `*fn` effect marker, `|>` pipeline, `?.` optional chaining, and `${…}`
-  string interpolation holes.
+  `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /
+  `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`),
+  the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`),
+  `|>` pipeline, `?.` optional chaining, and `${…}` string interpolation
+  holes. The grammar still carries a rule for the legacy `*fn` prefix so
+  a stray `*fn` colours before the parser rejects it
+  (`deprecated-star-fn` — the surface was removed in v0.beta.19, see
+  `../botopink-lang/CHANGELOG.md`); removing the grammar entry + the
+  matching `snippets.json` entry is a follow-up cleanup.
 - **`botopink-lsp` is launched with no args** — see
   [`../botopink-lang/modules/language-server/src/main.zig`](../botopink-lang/modules/language-server/src/main.zig).
   Do not add `lsp`/`serve`/etc. subcommands here.

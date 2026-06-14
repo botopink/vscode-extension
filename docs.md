@@ -73,7 +73,8 @@ The grammar mirrors the lexer keyword table in
 | Control keywords | `if`, `else`, `case`, `loop`, `for`, `break`, `continue`, `yield`, `return`, `try`, `catch`, `throw`, `await` |
 | Declaration keywords | `fn`, `val`, `var`, `pub`, `private`, `struct`, `record`, `enum`, `interface`, `type`, `implement`, `extend`, `extends`, `delegate`, `declare`, `macro`, `use`, `from`, `import`, `new`, `opaque`, `const`, `default`, `derive`, `test`, `assert`, `syntax`, `comptime`, `auto`, `set`, `get`, `as` |
 | Language constants | `true`, `false`, `null`, `Self` |
-| Effect marker | `*fn` (the `*` scoped as `keyword.operator.effect`) |
+| Effect annotations | `#[@<effect>]` blocks (`#[@result]` / `#[@future]` / `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`) — `@name` scoped as `entity.name.function.attribute` (same path as `#[@external]`) |
+| Legacy effect marker | `*fn` (kept as `keyword.operator.effect`) — the prefix was removed in v0.beta.19 (the parser emits `deprecated-star-fn`); the grammar rule stays so a stray `*fn` colours before the diagnostic fires, pending a follow-up cleanup of the grammar + snippet |
 | Attributes | `#[@external(…), …]` blocks — `@name` scoped as `entity.name.function.attribute` |
 | Builtin `@`-types | `@Expr`, `@Result`, `@Option`, `@Iterator` (`support.type.builtin`, matched before generic `@identifier`) |
 | Operators | `->`, `\|>`, `..`, `?.` (optional chaining), comparison, logical, bitwise, assignment, arithmetic, `?`, `\|` |

@@ -2,8 +2,8 @@
 
 Botopink language support for Visual Studio Code:
 
-- Syntax highlighting for `.bp` files (and ```` ```bp ```` fenced code blocks in Markdown), including `#[@external]` attributes, the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`), the `*fn` effect marker, `|>` pipelines, `?.` optional chaining, and `${…}` string interpolation.
-- Snippets for the most common declarations (`fn`, `val`, `record`, `struct`, `enum`, `case`, `loop`, `comptime`, …) plus `test` blocks, `#[@external]` declares, `*fn` generators, and `import { … } from "std"`.
+- Syntax highlighting for `.bp` files (and ```` ```bp ```` fenced code blocks in Markdown), including `#[@<effect>]` annotations (`#[@result]`/`#[@future]`/`#[@iterator]`/`#[@generator]`/`#[@asyncGenerator]`/`#[@context]`), `#[@external]` attributes, the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`), `|>` pipelines, `?.` optional chaining, and `${…}` string interpolation.
+- Snippets for the most common declarations (`fn`, `val`, `record`, `struct`, `enum`, `case`, `loop`, `comptime`, …) plus `test` blocks, `#[@external]` declares, and `import { … } from "std"`.
 - Full LSP integration via [`botopink-lsp`](../botopink-lang/modules/language-server/): diagnostics, formatting, hover, go-to-definition (same-file, cross-module, and into the embedded `std` modules), completion (members, `list.`/`io.` std members, interface methods on primitive/array/string receivers, labeled args), document symbols (incl. `test` blocks), folding, references, rename, signature help, semantic tokens, and inlay hints (all server-driven).
 - Tasks for the `botopink` CLI (`check`, `build`, `test`, `format`) plus a `$botopink` problem matcher that routes `botopink check` errors into the Problems panel.
 - CodeLens "Run" / "Run test" actions above `fn main` and each `test "…"` block (driven by LSP document symbols).
