@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# pre-commit — tracked submodule shim.
+#
+# Two paths:
+#   1. nested under the meta workspace (worktree of botopink/projects) —
+#      delegate to the meta's lib/test-runner.sh so the gate matches what the
+#      meta would run during a recursive submodule-bump scan.
+#   2. standalone clone (lib's own CI, partial checkout) — source the
+#      self-contained runner-standalone.sh shipped in this repo.
+set -euo pipefail
+
+META_ROOT=$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)
+if [ -n "$META_ROOT" ] && [ -f "$META_ROOT/scripts/git-hooks/lib/test-runner.sh" ]; then
+    echo "── pre-commit (delegating to meta runner) ──"
+    # shellcheck source=/dev/null
+    . "$META_ROOT/scripts/git-hooks/lib/test-runner.sh"
+    runProjectGate "$(git rev-parse --show-toplevel)"
+else
+    echo "── pre-commit (standalone) ──"
+    # shellcheck source=lib/runner-standalone.sh
+    . "$(git rev-parse --show-toplevel)/scripts/git-hooks/lib/runner-standalone.sh"
+    runStandaloneGate
+fi

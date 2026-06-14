@@ -218,3 +218,25 @@ both fields in the same edit that lands the release-worthy changes.
 unaffected by this workflow; they're created manually when a marketplace
 publish is desired (see module-auto-tag spec Notes for the rationale).
 Spec: [`../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md`](../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md).
+
+## Local gate
+
+`scripts/git-hooks/pre-commit` is the tracked source of truth for the
+local pre-commit gate. Install with `scripts/install-hooks.sh` from
+the [botopink/projects][meta] meta workspace (or symlink directly
+when the extension is cloned standalone). The shim auto-detects the
+mode:
+
+- **Nested under the meta** — delegates to
+  `scripts/git-hooks/lib/runners/vscode-extension.sh` in the meta.
+- **Standalone clone** — sources `scripts/git-hooks/lib/runner-standalone.sh`,
+  the self-contained mirror of the same gate.
+
+The gate runs `npm test --silent`. On a first run after a fresh
+clone, the bootstrap path runs `npm ci` once and writes a marker
+under `node_modules/.botopink-installed` so subsequent runs skip the
+install (same contract as [`scripts/test-vscode.sh`][test-vscode]).
+If `npm` is missing the gate prints a yellow warning and exits 0.
+
+[meta]: https://github.com/botopink/projects
+[test-vscode]: https://github.com/botopink/projects/blob/feat/scripts/test-vscode.sh
