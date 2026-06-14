@@ -1,0 +1,86 @@
+# vscode-extension auto-tag — fires on every push to feat/master/main.
+# Reads `botopink.json.version` (source of truth) and asserts it matches
+# `package.json.version` (drift kills the build with both numbers in the
+# message). Creates `<ver>` (immutable, master/main) or `<ver>-feat`
+# (moving, feat). The marketplace release pipeline (release.yml) gates on
+# `v*` tags — see module-auto-tag.md Notes for the naming choice.
+#
+# Spec: tasks/v0.beta.18/specs/module-auto-tag.md.
+name: tag
+
+on:
+  push:
+    branches: [feat, master, main]
+
+concurrency:
+  group: tag-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Read version (botopink.json vs package.json)
+        id: ver
+        shell: bash
+        run: |
+          ver=$(jq -r .version botopink.json)
+          if [ -z "$ver" ] || [ "$ver" = "null" ]; then
+            echo "::error::botopink.json missing 'version'"
+            exit 1
+          fi
+          pkg=$(jq -r .version package.json)
+          if [ "$ver" != "$pkg" ]; then
+            echo "::error::botopink.json version ($ver) != package.json version ($pkg) — bump both in the same edit"
+            exit 1
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Compute tag
+        id: tag
+        shell: bash
+        run: |
+          branch=${GITHUB_REF_NAME}
+          ver=${{ steps.ver.outputs.version }}
+          case "$branch" in
+            feat)         tag="${ver}-feat" ; mutable=1 ;;
+            master|main)  tag="${ver}"      ; mutable=0 ;;
+            *) echo "::error::unexpected branch '$branch'"; exit 1 ;;
+          esac
+          echo "tag=$tag"         >> "$GITHUB_OUTPUT"
+          echo "mutable=$mutable" >> "$GITHUB_OUTPUT"
+
+      - name: Create or move tag
+        env:
+          GIT_AUTHOR_NAME: botopink-auto-tag
+          GIT_AUTHOR_EMAIL: noreply@botopink.dev
+          GIT_COMMITTER_NAME: botopink-auto-tag
+          GIT_COMMITTER_EMAIL: noreply@botopink.dev
+        shell: bash
+        run: |
+          tag=${{ steps.tag.outputs.tag }}
+          mutable=${{ steps.tag.outputs.mutable }}
+          if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+            if [ "$mutable" = "1" ]; then
+              git tag -f "$tag" "$GITHUB_SHA"
+              git push --force origin "refs/tags/$tag"
+              echo "moved $tag → $GITHUB_SHA"
+            else
+              existing=$(git rev-list -n 1 "refs/tags/$tag")
+              if [ "$existing" = "$GITHUB_SHA" ]; then
+                echo "tag $tag already at $GITHUB_SHA — no-op"
+                exit 0
+              fi
+              echo "::error::tag $tag already exists at $existing — bump 'botopink.json' (and 'package.json') version to publish"
+              exit 1
+            fi
+          else
+            git tag "$tag" "$GITHUB_SHA"
+            git push origin "refs/tags/$tag"
+            echo "created $tag at $GITHUB_SHA"
+          fi

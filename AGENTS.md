@@ -198,3 +198,23 @@ account the PAT belongs to.
 - LSP server it launches → [`../botopink-lang/modules/language-server/AGENTS.md`](../botopink-lang/modules/language-server/AGENTS.md).
 - Token kinds the grammar mirrors → [`../botopink-lang/modules/compiler-core/src/lexer/token.zig`](../botopink-lang/modules/compiler-core/src/lexer/token.zig).
 - Language reference for snippet bodies → [`../botopink-lang/docs.md`](../botopink-lang/docs.md).
+
+## Tagging
+
+This repo is auto-tagged on push by
+[`./.github/workflows/tag.yml`](./.github/workflows/tag.yml):
+
+- `<version>-feat` — moving; force-updated on each feat push.
+- `<version>` — immutable; created once per master/main push. Re-push
+  without bumping `botopink.json.version` → red gate.
+
+`<version>` is `botopink.json.version`. The maintainer **must keep
+`botopink.json.version` and `package.json.version` in sync** — the tag
+job asserts equality and exits red with both numbers on drift. Bump
+both fields in the same edit that lands the release-worthy changes.
+
+`v*` tags (the marketplace release trigger in
+[`./.github/workflows/release.yml`](./.github/workflows/release.yml)) are
+unaffected by this workflow; they're created manually when a marketplace
+publish is desired (see module-auto-tag spec Notes for the rationale).
+Spec: [`../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md`](../botopink-lang/tasks/v0.beta.18/specs/module-auto-tag.md).
