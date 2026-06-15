@@ -21,10 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install Node 20
+      - name: Install Node 22
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          # Node 22+ ships `--experimental-strip-types`, which the
+          # `npm test` script uses to load the `.ts` sources directly.
+          node-version: '22'
           cache: 'npm'
 
       - name: npm ci
