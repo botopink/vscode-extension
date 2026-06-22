@@ -44,7 +44,7 @@ integration) that was scaffolded across the language server lands here.
 ### Added
 
 - Syntax highlighting for `.bp` files and fenced `bp` code blocks in Markdown.
-- Snippets for the common declarations, `test` blocks, `#[@external]` declares,
+- Snippets for the common declarations, `test` blocks, `#[@External.<targert>(...)]` declares,
   `*fn` generators (`*fn` was removed in v0.beta.19 — the snippet is pending
   cleanup), and `import { … } from "std"`.
 - LSP integration via `botopink-lsp`: diagnostics, formatting, hover,

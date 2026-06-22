@@ -57,7 +57,7 @@
   "External declaration": {
     "prefix": "external",
     "body": [
-      "#[@external(${1:node}, \"${2:module}\", \"${3:symbol}\"),",
+      "#[@External.<Target>(…)](${1:node}, \"${2:module}\", \"${3:symbol}\"),",
       "  @external(${4:erlang}, \"${5:module}\", \"${6:symbol}\")]",
       "pub declare fn ${7:name}(${8:args}) -> ${9:type};"
     ],

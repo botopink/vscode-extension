@@ -53,7 +53,7 @@
       ]
     },
     "attributes": {
-      "comment": "attribute blocks: `#[@external(erlang, \"math\", \"floor\"), …]`",
+      "comment": "attribute blocks: `#[@External.Erlang( \"math\", \"floor\"), …]`",
       "name": "meta.attribute.botopink",
       "begin": "#\\[",
       "end": "\\]",

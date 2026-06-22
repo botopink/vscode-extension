@@ -140,7 +140,7 @@ the host file a one-line delegation so the tested code is the shipped code.
   (`keywordOrIdent`) — `token.zig` only holds the enum; the actual
   surface keywords are the strings matched there. When you add or remove a
   keyword, update `syntaxes/botopink.tmLanguage.json`. Beyond plain
-  keywords the grammar also scopes: `#[@external(…)]` attribute blocks,
+  keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /
   `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`),
   the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`),
