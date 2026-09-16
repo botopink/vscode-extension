@@ -3,12 +3,12 @@
 Botopink language support for Visual Studio Code:
 
 - Syntax highlighting for `.bp` files (and ```` ```bp ```` fenced code blocks in Markdown), including `#[@<effect>]` annotations (`#[@result]`/`#[@future]`/`#[@iterator]`/`#[@generator]`/`#[@asyncGenerator]`/`#[@context]`), `#[@External.<targert>(...)]` attributes, the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`), `|>` pipelines, `?.` optional chaining, and `${…}` string interpolation.
-- Snippets for the most common declarations (`fn`, `val`, `record`, `struct`, `enum`, `case`, `loop`, `comptime`, …) plus `test` blocks, `#[@External.<targert>(...)]` declares, and `import { … } from "std"`.
+- Snippets for the most common declarations (`fn`, `val`, `record`, `enum`, `case`, `loop`, `comptime`, `#[@iterator] fn`, …) plus `test` blocks, `#[@External.Node(…), @External.Erlang(…)]` declares, and `import { … } from "std"`.
 - Full LSP integration via [`botopink-lsp`](../botopink-lang/modules/language-server/): diagnostics, formatting, hover, go-to-definition (same-file, cross-module, and into the embedded `std` modules), completion (members, `list.`/`io.` std members, interface methods on primitive/array/string receivers, labeled args), document symbols (incl. `test` blocks), folding, references, rename, signature help, semantic tokens, and inlay hints (all server-driven).
 - Tasks for the `botopink` CLI (`check`, `build`, `test`, `format`) plus a `$botopink` problem matcher that routes `botopink check` errors into the Problems panel.
 - CodeLens "Run" / "Run test" actions above `fn main` and each `test "…"` block (driven by LSP document symbols).
 - A status-bar codegen-target switcher (`commonJS` / `erlang` / `beam` / `wasm`) that reads and writes the `target` field of `botopink.json`.
-- Test Explorer integration: `test "…"` blocks are discovered across the workspace and runnable from the gutter / Testing view, with pass/fail and assertion messages mapped back from `botopink test`.
+- Test Explorer integration: `test "…"` blocks are discovered across the workspace and runnable from the gutter / Testing view, with pass/fail and assertion messages mapped back from `botopink test`. `botopink test` runs only on `commonJS` and `erlang`; with `beam` or `wasm` active, tests run on `commonJS` and a warning says so.
 
 ## Requirements
 

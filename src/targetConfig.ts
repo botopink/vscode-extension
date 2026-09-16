@@ -8,6 +8,56 @@ export type Target = (typeof TARGETS)[number];
 
 export const DEFAULT_TARGET: Target = "commonJS";
 
+/**
+ * The subset of `TARGETS` that `botopink test` runs. The CLI refuses every other
+ * target (`compiler-cli/src/cli/test_cmd.zig`: "`botopink test` currently
+ * supports only the commonJS and erlang targets"), so a test invocation never
+ * forwards a target outside this list. Build / run accept all of `TARGETS`.
+ */
+export const TEST_TARGETS = ["commonJS", "erlang"] as const satisfies readonly Target[];
+export type TestTarget = (typeof TEST_TARGETS)[number];
+
+/** The target a test run falls back to when the active one cannot run tests. */
+export const DEFAULT_TEST_TARGET: TestTarget = "commonJS";
+
+/** True when `botopink test` accepts `value` as its `--target`. */
+export function isTestTarget(value: unknown): value is TestTarget {
+  return (
+    typeof value === "string" &&
+    (TEST_TARGETS as readonly string[]).includes(value)
+  );
+}
+
+/** How a test run resolves the requested target. */
+export interface TestTargetChoice {
+  /** The target passed to `botopink test --target`. */
+  target: TestTarget;
+  /**
+   * The requested target when it could not run tests and `target` is the
+   * fallback; `undefined` when the requested target is used as-is.
+   */
+  replaced?: string;
+}
+
+/**
+ * Resolves the `--target` for a `botopink test` invocation: the requested
+ * target when the CLI can test it, otherwise `DEFAULT_TEST_TARGET` with the
+ * refused target reported in `replaced` so the caller can tell the user.
+ */
+export function testTargetFor(requested: string): TestTargetChoice {
+  if (isTestTarget(requested)) return { target: requested };
+  return { target: DEFAULT_TEST_TARGET, replaced: requested };
+}
+
+/** The notice shown when a test run replaces a target `botopink test` refuses. */
+export function testTargetNotice(choice: TestTargetChoice): string | undefined {
+  if (choice.replaced === undefined) return undefined;
+  return (
+    `\`botopink test\` runs only on ${TEST_TARGETS.join(" and ")}; ` +
+    `running tests on ${choice.target} instead of ${choice.replaced}.`
+  );
+}
+
 /** True when `value` is one of the known codegen targets. */
 export function isTarget(value: unknown): value is Target {
   return (

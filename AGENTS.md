@@ -30,7 +30,7 @@ Thin TypeScript wrapper that:
 | `problemMatchers` (`$botopink`) | parses `error: <msg> at <file>:<line>:<col>` from `botopink check` | CLI stderr |
 | CodeLens (`src/codeLens.ts`) | "▶ Run" over `fn main`, "▶ Run test" over each `test "…"` | LSP `documentSymbol` |
 | status bar (`src/target.ts`) | active codegen target; click → QuickPick → writes `target` in `botopink.json` | `botopink.json` |
-| Test Explorer (`src/testExplorer.ts`) | discovers `test "…"` blocks, runs `botopink test`, maps pass/fail | LSP `documentSymbol` + CLI output |
+| Test Explorer (`src/testExplorer.ts`) | discovers `test "…"` blocks, runs `botopink test` on a target it accepts (`TEST_TARGETS`), maps pass/fail | LSP `documentSymbol` + CLI output |
 
 Semantic classification (semantic tokens, inlay hints, symbols, …) is
 **always** served by `botopink-lsp`. The extension only wires the UI.
@@ -70,6 +70,7 @@ vscode-extension/
 ├── tsconfig.json
 ├── language-configuration.json     ← brackets / auto-close / on-enter rules
 ├── snippets.json                   ← snippets for fn/val/record/case/loop/…
+│                                     (each needs a fixture in scripts/snippetFixtures.ts)
 ├── syntaxes/
 │   ├── botopink.tmLanguage.json    ← TextMate grammar for `.bp`
 │   └── botopink.codeblock.json     ← markdown injection for ```bp blocks
@@ -88,10 +89,18 @@ vscode-extension/
 │   ├── taskArgs.ts                 ← argsFor / taskLabel / taskGroupKind
 │   ├── quoting.ts                  ← quoteArg (POSIX shell quoting)
 │   ├── symbolNodes.ts              ← flatten + test/main predicates + DocumentSymbol[] guard
-│   ├── targetConfig.ts             ← TARGETS + resolve/parse/write botopink.json target
+│   ├── targetConfig.ts             ← TARGETS (build/run) + TEST_TARGETS (test) +
+│   │                                 testTargetFor + resolve/parse/write botopink.json target
 │   └── pathResolve.ts              ← resolveBinPath (CLI/LSP executable resolution)
+├── scripts/
+│   ├── compilerCheck.ts            ← CI `compiler` job: lexer-keyword pin + every snippet
+│   │                                 through `botopink check` (`npm run compiler-check`)
+│   ├── snippetFixtures.ts          ← per-snippet tabstop values + wrapper → a checkable module
+│   ├── lexerKeywords.ts            ← keywordOrIdent extraction + grammar keyword-rule parsing
+│   └── git-hooks/                  ← tracked pre-commit gate
 └── test/
     ├── package.json                ← `{"type":"module"}` for Node's native-TS test runner
+    ├── lexerKeywords.json          ← pinned `keywordOrIdent` words (checked against lexer.zig in CI)
     └── unit.test.ts                ← pure-function scenarios (no vscode host)
 ```
 
@@ -109,7 +118,23 @@ zig build test-vscode   # same, from the repo gate (needs node + `npm install`)
 ```
 
 `test/unit.test.ts` runs on Node's built-in runner with native TypeScript
-support (tests import the leaf modules with explicit `.ts` extensions). Like
+support (tests import the leaf modules with explicit `.ts` extensions). A leaf
+module that imports another leaf module uses the explicit `.ts` extension too
+(`taskArgs.ts` → `./targetConfig.ts`): Node's ESM loader needs it, and
+`tsconfig.json`'s `rewriteRelativeImportExtensions` turns it into `.js` on emit.
+
+The suite also guards what the extension ships, without a compiler: every
+grammar control/declaration keyword must be in `test/lexerKeywords.json`, every
+pinned lexer keyword must be highlighted, and every `snippets.json` entry must
+have a fixture in `scripts/snippetFixtures.ts`. The compiler-backed half runs in
+CI (below) and locally with
+
+```bash
+npm run compiler-check -- --lang ../botopink-lang   # needs a built zig-out/bin/botopink
+```
+
+which fails when `test/lexerKeywords.json` drifts from `keywordOrIdent` or when
+any snippet, expanded by its fixture, does not pass `botopink check`. Like
 `zig build test-libs`, `test-vscode` is **not** wired into `zig build test` —
 it needs `node`/`npm` on PATH. When you touch a pure helper, keep its wrapper in
 the host file a one-line delegation so the tested code is the shipped code.
@@ -133,23 +158,30 @@ the host file a one-line delegation so the tested code is the shipped code.
     (`  ok   <name>` / `  FAIL <name>  (<msg>)  at <loc>`).
   The `botopink` CLI surface lives in
   [`../botopink-lang/modules/compiler-cli/src/main.zig`](../botopink-lang/modules/compiler-cli/src/main.zig) (subcommands
-  `check`/`build`/`test`/`format`/`run`); only `build`/`test` take
-  `--target`.
+  `check`/`build`/`test`/`format`/`run`); only `build`/`run`/`test` take
+  `--target`;
+  - `TEST_TARGETS` in `src/targetConfig.ts` tracks the targets `botopink test`
+    accepts (`compiler-cli/src/cli/test_cmd.zig` refuses all but commonJS and
+    erlang). Every test invocation — Test Explorer, CodeLens "Run test", the
+    `test` task — resolves its target through `testTargetFor`, which falls back
+    to commonJS (with a warning for the two UI paths) instead of forwarding
+    `beam`/`wasm`.
 - **Keywords list must stay in sync** with the lexer keyword table in
   [`../botopink-lang/modules/compiler-core/src/lexer.zig`](../botopink-lang/modules/compiler-core/src/lexer.zig)
   (`keywordOrIdent`) — `token.zig` only holds the enum; the actual
   surface keywords are the strings matched there. When you add or remove a
-  keyword, update `syntaxes/botopink.tmLanguage.json`. Beyond plain
+  keyword, update `syntaxes/botopink.tmLanguage.json` and
+  `test/lexerKeywords.json` (the unit suite and the CI `compiler` job fail
+  otherwise). `const` and `struct` are not keywords and must not be listed.
+  Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /
   `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`),
   the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`),
   `|>` pipeline, `?.` optional chaining, and `${…}` string interpolation
-  holes. The grammar still carries a rule for the legacy `*fn` prefix so
-  a stray `*fn` colours before the parser rejects it
-  (`deprecated-star-fn` — the surface was removed in v0.beta.19, see
-  `../botopink-lang/CHANGELOG.md`); removing the grammar entry + the
-  matching `snippets.json` entry is a follow-up cleanup.
+  holes. Retired syntax gets no rule and no snippet: the legacy `*fn`
+  prefix (`deprecated-star-fn`, removed in v0.beta.19) is gone from both, and
+  the iterator snippet uses `#[@iterator] fn`.
 - **`botopink-lsp` is launched with no args** — see
   [`../botopink-lang/modules/language-server/src/main.zig`](../botopink-lang/modules/language-server/src/main.zig).
   Do not add `lsp`/`serve`/etc. subcommands here.
@@ -178,7 +210,7 @@ Two workflows under `.github/workflows/`:
 
 | Workflow      | Trigger          | What                                                                  |
 | ------------- | ---------------- | --------------------------------------------------------------------- |
-| `test.yml`    | push / PR        | `npm ci && npm test` on ubuntu-22.04.                                 |
+| `test.yml`    | push / PR        | job `test`: `npm ci && npm test`; job `compiler`: builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. |
 | `release.yml` | tag push `v*`    | `package` → `publish-gh` → conditional `publish-marketplace`.         |
 
 **`VSCE_PAT` secret.** The `publish-marketplace` job is gated on

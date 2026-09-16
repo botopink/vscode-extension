@@ -9,3 +9,5 @@ tsconfig.json
 **/*.ts
 AGENTS.md
 docs.md
+scripts/**
+test/**

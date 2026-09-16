@@ -34,17 +34,12 @@
     "keywords": {
       "patterns": [
         {
-          "comment": "effect marker on generator/effectful fns: `*fn` / `pub *fn`",
-          "name": "keyword.operator.effect.botopink",
-          "match": "\\*(?=fn\\b)"
-        },
-        {
           "name": "keyword.control.botopink",
-          "match": "\\b(if|else|case|loop|for|break|continue|yield|return|try|catch|throw|await)\\b"
+          "match": "\\b(if|else|case|loop|for|break|continue|yield|return|try|catch|throw|await|is)\\b"
         },
         {
           "name": "keyword.declaration.botopink",
-          "match": "\\b(fn|val|var|pub|private|mod|struct|record|enum|interface|type|implement|extend|extends|delegate|declare|macro|use|from|import|new|opaque|const|default|derive|test|assert|syntax|comptime|auto|set|get|as)\\b"
+          "match": "\\b(fn|val|var|pub|private|mod|record|enum|interface|type|implement|extend|extends|delegate|declare|macro|use|from|import|new|opaque|default|derive|test|assert|syntax|comptime|auto|set|get|as)\\b"
         },
         {
           "name": "constant.language.botopink",

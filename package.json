@@ -195,6 +195,7 @@
     "package": "mkdir -p dist && vsce package -o dist/",
     "pretest": "tsc -p ./ --noEmit",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test test/*.test.ts",
+    "compiler-check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/compilerCheck.ts",
     "format-check": "prettier \"./src/**/*.ts\" --check",
     "format": "prettier \"./src/**/*.ts\" --write"
   },

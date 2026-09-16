@@ -49,17 +49,22 @@
     "body": ["assert ${1:condition}, \"${0:message}\";"],
     "description": "Assertion inside a test block"
   },
-  "Effectful function": {
-    "prefix": "*fn",
-    "body": ["*fn ${1:name}(${2:args}) -> @Iterator<${3:T}> {", "\tyield $0", "}"],
-    "description": "Effectful / generator function (yields)"
+  "Iterator function": {
+    "prefix": "iterator",
+    "body": [
+      "#[@iterator]",
+      "fn ${1:name}(${2:args}) -> @Iterator<${3:T}> {",
+      "\tyield $0;",
+      "}"
+    ],
+    "description": "Iterator function (yields values)"
   },
   "External declaration": {
     "prefix": "external",
     "body": [
-      "#[@External.<Target>(…)](${1:node}, \"${2:module}\", \"${3:symbol}\"),",
-      "  @external(${4:erlang}, \"${5:module}\", \"${6:symbol}\")]",
-      "pub declare fn ${7:name}(${8:args}) -> ${9:type};"
+      "#[@External.Node(\"${1:module}\", \"${2:symbol}\"),",
+      "  @External.Erlang(\"${3:module}\", \"${4:symbol}\")]",
+      "pub declare fn ${5:name}(${6:args}) -> ${7:type};"
     ],
     "description": "Externally-implemented declare fn with per-target bindings"
   },
@@ -67,18 +72,6 @@
     "prefix": "record",
     "body": ["record ${1:Name} {", "\t${2:field}: ${0:type},", "}"],
     "description": "Record declaration (shorthand)"
-  },
-  "Struct": {
-    "prefix": "struct",
-    "body": [
-      "struct ${1:Name} {",
-      "\t${2:_field}: ${3:type} = ${4:default},",
-      "\tfn ${5:method}(self: Self) {",
-      "\t\t$0",
-      "\t}",
-      "}"
-    ],
-    "description": "Struct declaration (shorthand)"
   },
   "Enum": {
     "prefix": "enum",

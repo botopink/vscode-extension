@@ -21,6 +21,7 @@ import {
 import { BOTOPINK_TASK_TYPE, BotopinkTaskProvider } from "./tasks";
 import { createTestController } from "./testExplorer";
 import { TargetManager } from "./target";
+import { testTargetFor, testTargetNotice } from "./targetConfig";
 import { quoteArg } from "./quoting";
 import { resolveBinPath } from "./pathResolve";
 
@@ -121,7 +122,8 @@ export function deactivate(): Thenable<void> | undefined {
  *
  * Used by the CodeLens "Run" / "Run test" actions: a terminal gives the user a
  * live, interactive view (and re-runs are one keystroke away). The active
- * codegen target is honoured for the commands that accept `--target`.
+ * codegen target is honoured for the commands that accept `--target`; a test
+ * run on a target `botopink test` refuses falls back to `TEST_TARGETS`.
  */
 async function runCliInTerminal(
   command: "run" | "test",
@@ -129,7 +131,18 @@ async function runCliInTerminal(
   opts: { filter?: string } = {},
 ): Promise<void> {
   const cli = await getBotopinkCliPath();
-  const args = [command, "--target", targets.target];
+  let target: string = targets.target;
+  if (command === "test") {
+    // `botopink test` refuses beam / wasm: run on a target it accepts and say so.
+    const choice = testTargetFor(target);
+    target = choice.target;
+    const notice = testTargetNotice(choice);
+    if (notice) {
+      getOutputChannel().appendLine(notice);
+      void vscode.window.showWarningMessage(notice);
+    }
+  }
+  const args = [command, "--target", target];
   if (command === "test" && opts.filter) {
     args.push("--filter", quoteArg(opts.filter));
   }

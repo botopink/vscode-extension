@@ -4,7 +4,25 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- **Snippets and grammar match the parser.** The `*fn` snippet (removed syntax)
+  is now `iterator`, expanding to `#[@iterator] fn …`; the `struct` snippet is
+  gone (`record` is the declaration); the `external` snippet emits
+  `#[@External.Node(…), @External.Erlang(…)]` instead of a garbled mix of old
+  and new forms. The grammar no longer highlights `struct`, `const` or the `*fn`
+  prefix, and now highlights `is`.
+- **Test runs never forward a target `botopink test` refuses.** With `beam` or
+  `wasm` active, the Test Explorer, CodeLens "Run test" and the `test` task run
+  on `commonJS` (the UI paths show a warning) instead of failing with the CLI's
+  "supports only the commonJS and erlang targets" error.
+
 ### Added
+
+- **Compiler-backed CI job.** `test.yml` gains a `compiler` job that builds
+  botopink-lang (`vars.BOTOPINK_LANG_REF`, default `feat`) and runs
+  `npm run compiler-check`: the pinned lexer keyword list must equal
+  `keywordOrIdent`, and every snippet must pass `botopink check`.
 
 - **Sub-language highlighting inside strings** — the interior of `erika "…"` /
   `html """…"""` is now coloured by the LSP's comptime-driven semantic tokens.

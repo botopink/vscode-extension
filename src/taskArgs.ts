@@ -2,6 +2,8 @@
 // `vscode` import so it is unit-testable without a host. `tasks.ts` consumes
 // these and only adds the VS Code task plumbing on top.
 
+import { testTargetFor } from "./targetConfig.ts";
+
 /** CLI subcommands surfaced as tasks. */
 export type BotopinkCommand = "check" | "build" | "test" | "format";
 
@@ -27,9 +29,9 @@ export function argsFor(spec: TaskSpec, activeTarget: string): string[] {
       args.push("--target", spec.target ?? activeTarget);
       break;
     case "test":
-      // Only commonJS / erlang run tests; honour the active target so an
-      // erlang project still works, defaulting otherwise.
-      args.push("--target", spec.target ?? activeTarget);
+      // Only commonJS / erlang run tests (`TEST_TARGETS`); honour the requested
+      // target when the CLI can test it, fall back to commonJS otherwise.
+      args.push("--target", testTargetFor(spec.target ?? activeTarget).target);
       if (spec.filter) {
         args.push("--filter", spec.filter);
       }
@@ -44,8 +46,11 @@ export function argsFor(spec: TaskSpec, activeTarget: string): string[] {
 
 /** The human-readable task label (build/test carry the resolved target). */
 export function taskLabel(spec: TaskSpec, activeTarget: string): string {
-  if (spec.command === "build" || spec.command === "test") {
+  if (spec.command === "build") {
     return `${spec.command} (${spec.target ?? activeTarget})`;
+  }
+  if (spec.command === "test") {
+    return `${spec.command} (${testTargetFor(spec.target ?? activeTarget).target})`;
   }
   return spec.command;
 }

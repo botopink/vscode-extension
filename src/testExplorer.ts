@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { getBotopinkCliPath, getOutputChannel, workspaceCwd } from "./cli";
 import { fetchDocumentSymbols, flattenSymbols, isTestSymbol } from "./symbols";
 import { TargetManager } from "./target";
+import { testTargetFor, testTargetNotice } from "./targetConfig";
 import { parseTestOutput } from "./testOutput";
 
 // `parseTestOutput` (and its regexes / `TestOutcome` shape) live in the
@@ -240,12 +241,19 @@ async function runBotopinkTest(
   token: vscode.CancellationToken,
 ): Promise<CliResult> {
   const cli = await getBotopinkCliPath();
-  const args = ["test", "--target", targets.target];
+  // `botopink test` refuses beam / wasm: run on a target it accepts and say so.
+  const choice = testTargetFor(targets.target);
+  const args = ["test", "--target", choice.target];
   if (filter) {
     args.push("--filter", filter);
   }
   const cwd = workspaceCwd();
   const channel = getOutputChannel();
+  const notice = testTargetNotice(choice);
+  if (notice) {
+    channel.appendLine(notice);
+    void vscode.window.showWarningMessage(notice);
+  }
   channel.appendLine(`$ ${cli} ${args.join(" ")}`);
 
   return await new Promise<CliResult>((resolve) => {

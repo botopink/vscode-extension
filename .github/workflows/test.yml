@@ -1,5 +1,17 @@
-# Push/PR CI for the VS Code extension. Single Linux runner — the pure-fn
-# test suite (`node --test test/**/*.test.ts`) has no platform dependency.
+# Push/PR CI for the VS Code extension. Two jobs on a single Linux runner:
+#
+# - `test` — the pure-fn suite (`npm test`, `node --test test/*.test.ts`); no
+#   platform dependency. It also pins the grammar keywords against
+#   `test/lexerKeywords.json` and requires a fixture for every snippet.
+# - `compiler` — builds `botopink` from botopink-lang and runs
+#   `scripts/compilerCheck.ts`: `test/lexerKeywords.json` must equal the
+#   lexer's `keywordOrIdent` table, and every `snippets.json` body, expanded by
+#   its fixture, must pass `botopink check`. This is what keeps snippets and
+#   grammar from offering syntax the parser rejects.
+#
+# `BOTOPINK_LANG_REF` (repo variable, default `feat`) pins the botopink-lang
+# ref the `compiler` job builds.
+#
 # The full extension-host suite (needs xvfb + a VS Code download) is out of
 # scope here; this gate guards the TypeScript modules behind the extension.
 name: test
@@ -34,3 +46,45 @@ jobs:
 
       - name: npm test
         run: npm test
+
+  compiler:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout this extension
+        uses: actions/checkout@v5
+        with:
+          path: self
+
+      - name: Checkout botopink-lang
+        uses: actions/checkout@v5
+        with:
+          repository: botopink/botopink-lang
+          ref: ${{ vars.BOTOPINK_LANG_REF || 'feat' }}
+          path: botopink-lang
+
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      # `botopink check` evaluates `comptime` through the Erlang host.
+      - name: Install Erlang
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y erlang
+
+      - name: Install Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Print build identity
+        run: echo "botopink-lang ref: ${{ vars.BOTOPINK_LANG_REF || 'feat' }}"
+
+      - name: zig build install
+        working-directory: botopink-lang
+        run: zig build install
+
+      - name: Snippets and grammar against the compiler
+        working-directory: self
+        run: npm run compiler-check -- --lang ../botopink-lang
