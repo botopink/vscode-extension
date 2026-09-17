@@ -89,6 +89,16 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     values: { 1: "single", 2: "n: i32", 3: "i32", 0: "n" },
     wrap: moduleLevel,
   },
+  "Result function": {
+    values: {
+      1: "parsePort",
+      2: "s: string",
+      3: "i32",
+      4: "string",
+      0: 'if (s == "") { throw "empty"; };\n\treturn 80;',
+    },
+    wrap: moduleLevel,
+  },
   "External declaration": {
     values: {
       1: "process",
@@ -101,15 +111,20 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     },
     wrap: moduleLevel,
   },
-  Record: {
-    values: { 1: "Point", 2: "x", 0: "i32" },
+  "Type (record)": {
+    values: {
+      1: "Point",
+      2: "x",
+      3: "i32",
+      0: "fn norm(self: Self) -> i32 {\n\t\treturn self.x;\n\t}",
+    },
     wrap: moduleLevel,
   },
-  Enum: {
+  "Type (enum)": {
     values: { 1: "Color", 2: "Red", 0: "Green," },
     wrap: moduleLevel,
   },
-  Interface: {
+  Behavior: {
     values: { 1: "Shape", 2: "area", 0: " -> i32;" },
     wrap: moduleLevel,
   },
@@ -128,6 +143,10 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
   "Loop over collection": {
     values: { 1: "xs", 2: "x", 0: "val y = x;" },
     wrap: insideFn("val xs = [1, 2, 3];"),
+  },
+  "Loop while": {
+    values: { 1: "attempts < 3", 0: "attempts += 1;" },
+    wrap: insideFn("var attempts = 0;"),
   },
   "Loop with break value": {
     values: { 1: "doubled", 2: "xs", 3: "x", 0: "x * 2" },
@@ -159,13 +178,11 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     },
     wrap: (rendered) =>
       [
-        "interface Shape {",
+        "behavior Shape {",
         "    fn area(self: Self) -> i32;",
         "}",
         "",
-        "record Point {",
-        "    x: i32,",
-        "}",
+        "type Point(x: i32)",
         "",
         rendered,
         "",

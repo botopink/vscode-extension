@@ -69,7 +69,7 @@ vscode-extension/
 ├── package.json                    ← extension manifest (contributes/commands/config)
 ├── tsconfig.json
 ├── language-configuration.json     ← brackets / auto-close / on-enter rules
-├── snippets.json                   ← snippets for fn/val/record/case/loop/…
+├── snippets.json                   ← snippets for fn/val/type/behavior/case/loop/…
 │                                     (each needs a fixture in scripts/snippetFixtures.ts)
 ├── syntaxes/
 │   ├── botopink.tmLanguage.json    ← TextMate grammar for `.bp`
@@ -173,7 +173,8 @@ the host file a one-line delegation so the tested code is the shipped code.
   keyword, update `syntaxes/botopink.tmLanguage.json` and
   `test/lexerKeywords.json` (the unit suite and the CI `compiler` job fail
   otherwise). `const` and `struct` are not keywords and must not be listed, nor
-  are the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
+  are `delegate`, `new`, `record`, `enum`, `interface` (removed by the 1.0.4-beta surface cutover), nor
+  the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
   `set` (identifiers since botopink-lang `ecac19d`).
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,

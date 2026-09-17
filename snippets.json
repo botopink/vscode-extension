@@ -1,37 +1,55 @@
 {
   "Function": {
     "prefix": "fn",
-    "body": ["fn ${1:name}(${2:args}) -> ${3:type} {", "\t$0", "}"],
+    "body": [
+      "fn ${1:name}(${2:args}) -> ${3:type} {",
+      "\t$0",
+      "}"
+    ],
     "description": "Private function"
   },
   "Public function": {
     "prefix": "pub fn",
-    "body": ["pub fn ${1:name}(${2:args}) -> ${3:type} {", "\t$0", "}"],
+    "body": [
+      "pub fn ${1:name}(${2:args}) -> ${3:type} {",
+      "\t$0",
+      "}"
+    ],
     "description": "Public exported function"
   },
   "Value binding": {
     "prefix": "val",
-    "body": ["val ${1:name} = ${0:value};"],
+    "body": [
+      "val ${1:name} = ${0:value};"
+    ],
     "description": "Immutable value binding"
   },
   "Mutable variable": {
     "prefix": "var",
-    "body": ["var ${1:name} = ${0:value};"],
+    "body": [
+      "var ${1:name} = ${0:value};"
+    ],
     "description": "Mutable variable binding"
   },
   "Public value": {
     "prefix": "pub val",
-    "body": ["pub val ${1:NAME} = ${0:value};"],
+    "body": [
+      "pub val ${1:NAME} = ${0:value};"
+    ],
     "description": "Public exported value"
   },
   "Import": {
     "prefix": "import",
-    "body": ["import { ${1:name} } from \"${2:module}\";"],
+    "body": [
+      "import { ${1:name} } from \"${2:module}\";"
+    ],
     "description": "Named import"
   },
   "Import from std": {
     "prefix": "importstd",
-    "body": ["import { ${1:list} } from \"std\";"],
+    "body": [
+      "import { ${1:list} } from \"std\";"
+    ],
     "description": "Import a module from the std package"
   },
   "Test block": {
@@ -46,7 +64,9 @@
   },
   "Assertion": {
     "prefix": "assert",
-    "body": ["assert ${1:condition}, \"${0:message}\";"],
+    "body": [
+      "assert ${1:condition}, \"${0:message}\";"
+    ],
     "description": "Assertion inside a test block"
   },
   "Iterator function": {
@@ -59,6 +79,16 @@
     ],
     "description": "Iterator function (yields values)"
   },
+  "Result function": {
+    "prefix": "result",
+    "body": [
+      "#[@result]",
+      "fn ${1:name}(${2:args}) -> @Result<${3:T}, ${4:E}> {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Fallible function: #[@result] with its @Result<T, E> return type"
+  },
   "External declaration": {
     "prefix": "external",
     "body": [
@@ -68,43 +98,51 @@
     ],
     "description": "Externally-implemented declare fn with per-target bindings"
   },
-  "Record": {
-    "prefix": "record",
-    "body": ["record ${1:Name} {", "\t${2:field}: ${0:type},", "}"],
-    "description": "Record declaration (shorthand)"
-  },
-  "Enum": {
-    "prefix": "enum",
+  "Type (record)": {
+    "prefix": "type",
     "body": [
-      "enum ${1:Name} {",
+      "type ${1:Name}(${2:field}: ${3:type}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Type with fields (record shape)"
+  },
+  "Type (enum)": {
+    "prefix": "typeenum",
+    "body": [
+      "type ${1:Name} {",
       "\t${2:Variant},",
       "\t$0",
       "}"
     ],
-    "description": "Enum declaration (shorthand)"
+    "description": "Type with variants (enum shape)"
   },
-  "Interface": {
-    "prefix": "interface",
+  "Behavior": {
+    "prefix": "behavior",
     "body": [
-      "interface ${1:Name} {",
+      "behavior ${1:Name} {",
       "\tfn ${2:method}(self: Self)$0",
       "}"
     ],
-    "description": "Interface declaration"
+    "description": "Behavior declaration"
   },
   "Case expression": {
     "prefix": "case",
     "body": [
       "case ${1:subject} {",
-      "\t${2:pattern} -> ${3:result};",
-      "\t_ -> ${0:fallback};",
-      "}"
+      "\t${2:pattern} { ${3:result} }",
+      "\t_ { ${0:fallback} }",
+      "};"
     ],
-    "description": "Pattern matching"
+    "description": "Pattern matching: Pattern { body } arms and a final _"
   },
   "If expression": {
     "prefix": "if",
-    "body": ["if (${1:cond}) {", "\t$0", "}"],
+    "body": [
+      "if (${1:cond}) {",
+      "\t$0",
+      "}"
+    ],
     "description": "Conditional"
   },
   "If-else expression": {
@@ -120,8 +158,21 @@
   },
   "Loop over collection": {
     "prefix": "loop",
-    "body": ["loop (${1:collection}) { ${2:item} ->", "\t$0", "};"],
+    "body": [
+      "loop (${1:collection}) { ${2:item} ->",
+      "\t$0",
+      "};"
+    ],
     "description": "Loop over a collection"
+  },
+  "Loop while": {
+    "prefix": "loopwhile",
+    "body": [
+      "loop (${1:condition}) {",
+      "\t$0",
+      "};"
+    ],
+    "description": "Loop while a condition holds (replaces while)"
   },
   "Loop with break value": {
     "prefix": "loopmap",
@@ -134,12 +185,16 @@
   },
   "Comptime expression": {
     "prefix": "comptime",
-    "body": ["comptime ${0:expr}"],
+    "body": [
+      "comptime ${0:expr}"
+    ],
     "description": "Compile-time evaluation"
   },
   "Try with catch": {
     "prefix": "trycatch",
-    "body": ["val ${1:r} = try ${2:expr} catch ${0:fallback};"],
+    "body": [
+      "val ${1:r} = try ${2:expr} catch ${0:fallback};"
+    ],
     "description": "Error handling with fallback"
   },
   "Implement for record": {

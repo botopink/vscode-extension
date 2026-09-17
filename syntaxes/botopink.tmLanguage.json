@@ -2,17 +2,46 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Botopink",
   "scopeName": "source.botopink",
-  "fileTypes": ["bp"],
+  "fileTypes": [
+    "bp"
+  ],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#attributes" },
-    { "include": "#keywords" },
-    { "include": "#strings" },
-    { "include": "#constants" },
-    { "include": "#builtins" },
-    { "include": "#entity" },
-    { "include": "#operators" },
-    { "include": "#discards" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#attributes"
+    },
+    {
+      "include": "#tuple"
+    },
+    {
+      "include": "#caseGuard"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#enumMember"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#entity"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#discards"
+    }
   ],
   "repository": {
     "comments": {
@@ -39,7 +68,7 @@
         },
         {
           "name": "keyword.declaration.botopink",
-          "match": "\\b(fn|val|var|pub|mod|record|enum|interface|type|implement|extend|extends|delegate|declare|use|from|import|new|default|test|assert|syntax|comptime|as)\\b"
+          "match": "\\b(fn|val|var|pub|mod|type|behavior|implement|extend|extends|declare|use|from|import|default|test|assert|syntax|comptime|as)\\b"
         },
         {
           "name": "constant.language.botopink",
@@ -47,24 +76,55 @@
         }
       ]
     },
+    "caseGuard": {
+      "comment": "`when` is not a lexer keyword: it is highlighted only as a case-arm guard — after an arm's pattern (a word, `)`, `]`, `>` or `}`) and before `(`, as in `Option.Some(value: v) when (v is string) { … }`. A `when` identifier elsewhere stays an identifier.",
+      "match": "(?<=[\\w)\\]>}])(\\s+)(when)(?=\\s*\\()",
+      "captures": {
+        "2": {
+          "name": "keyword.control.guard.botopink"
+        }
+      }
+    },
+    "tuple": {
+      "comment": "tuple literal and tuple type `#(…)` — `#(1, \"a\")`, `#(name: string, pop: i32)`; must not be confused with the `#[…]` attribute block",
+      "name": "punctuation.definition.tuple.begin.botopink",
+      "match": "#\\("
+    },
+    "enumMember": {
+      "comment": "`.Variant` shorthand — `.Some(v)`, `.None` — when the enum comes from the value's type (a qualified `Option.Some` is coloured by the type rule)",
+      "match": "(?<![\\w.])\\.([A-Z][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "variable.other.enummember.botopink"
+        }
+      }
+    },
     "attributes": {
       "comment": "attribute blocks: `#[@External.Erlang( \"math\", \"floor\"), …]`",
       "name": "meta.attribute.botopink",
       "begin": "#\\[",
       "end": "\\]",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.attribute.botopink" }
+        "0": {
+          "name": "punctuation.definition.attribute.botopink"
+        }
       },
       "endCaptures": {
-        "0": { "name": "punctuation.definition.attribute.botopink" }
+        "0": {
+          "name": "punctuation.definition.attribute.botopink"
+        }
       },
       "patterns": [
         {
           "name": "entity.name.function.attribute.botopink",
           "match": "@[a-zA-Z_][A-Za-z0-9_]*"
         },
-        { "include": "#strings" },
-        { "include": "#constants" }
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#constants"
+        }
       ]
     },
     "operators": {
@@ -84,7 +144,8 @@
         },
         {
           "name": "keyword.operator.range.botopink",
-          "match": "\\.\\."
+          "match": "\\.\\.",
+          "comment": "`..` — a range (`0..n`) and, in a pattern, the rest (`#(0, ..)`, `Shape.Rect(width: w, ..)`)"
         },
         {
           "name": "keyword.operator.comparison.botopink",
@@ -111,8 +172,9 @@
           "match": "\\?"
         },
         {
-          "name": "keyword.operator.other.botopink",
-          "match": "\\|"
+          "name": "keyword.operator.type.union.botopink",
+          "match": "\\|",
+          "comment": "`|` — a union type: `i32 | string`, `(i32 | string)[]` (after `||` and `|>`)"
         }
       ]
     },
@@ -124,7 +186,9 @@
           "begin": "\"\"\"",
           "end": "\"\"\"",
           "patterns": [
-            { "include": "#interpolation" },
+            {
+              "include": "#interpolation"
+            },
             {
               "name": "constant.character.escape.botopink",
               "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[\"\\\\nrt0$])"
@@ -136,7 +200,9 @@
           "begin": "\"",
           "end": "\"",
           "patterns": [
-            { "include": "#interpolation" },
+            {
+              "include": "#interpolation"
+            },
             {
               "name": "constant.character.escape.botopink",
               "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[\"\\\\nrt0$])"
@@ -151,23 +217,42 @@
       "begin": "\\$\\{",
       "end": "\\}",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.template-expression.begin.botopink" }
+        "0": {
+          "name": "punctuation.definition.template-expression.begin.botopink"
+        }
       },
       "endCaptures": {
-        "0": { "name": "punctuation.definition.template-expression.end.botopink" }
+        "0": {
+          "name": "punctuation.definition.template-expression.end.botopink"
+        }
       },
-      "patterns": [{ "include": "$self" }]
+      "patterns": [
+        {
+          "include": "$self"
+        }
+      ]
     },
     "constants": {
       "patterns": [
-        { "include": "#binary_number" },
-        { "include": "#octal_number" },
-        { "include": "#hexadecimal_number" },
-        { "include": "#float_number" },
-        { "include": "#decimal_number" },
+        {
+          "include": "#binary_number"
+        },
+        {
+          "include": "#octal_number"
+        },
+        {
+          "include": "#hexadecimal_number"
+        },
+        {
+          "include": "#float_number"
+        },
+        {
+          "include": "#decimal_number"
+        },
         {
           "name": "support.type.primitive.botopink",
-          "match": "\\b(i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|string|void|never|any|unknown)\\b"
+          "match": "\\b(i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|string|void|never|unknown)\\b",
+          "comment": "`unknown` is the type of any value not yet checked; there is no `any`"
         },
         {
           "name": "entity.name.type.botopink",
@@ -200,7 +285,7 @@
         {
           "comment": "builtin `@`-prefixed types — must precede the generic @ident rule",
           "name": "support.type.builtin.botopink",
-          "match": "@(Expr|Result|Option|Iterator)\\b"
+          "match": "@(Expr|Result|Option|Iterator|Future|AsyncGenerator)\\b"
         },
         {
           "name": "support.function.builtin.botopink",
@@ -213,18 +298,26 @@
         {
           "match": "\\b(fn)\\s+([a-z_][A-Za-z0-9_]*)",
           "captures": {
-            "1": { "name": "keyword.declaration.botopink" },
-            "2": { "name": "entity.name.function.botopink" }
+            "1": {
+              "name": "keyword.declaration.botopink"
+            },
+            "2": {
+              "name": "entity.name.function.botopink"
+            }
           }
         },
         {
           "begin": "\\b([a-z_][A-Za-z0-9_]*)\\s*\\(",
           "end": "\\)",
           "beginCaptures": {
-            "1": { "name": "entity.name.function.botopink" }
+            "1": {
+              "name": "entity.name.function.botopink"
+            }
           },
           "patterns": [
-            { "include": "$self" }
+            {
+              "include": "$self"
+            }
           ]
         },
         {
