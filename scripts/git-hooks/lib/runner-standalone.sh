@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# runner-standalone.sh — pre-commit gate for a standalone clone of the
-# vscode-extension. Self-contained mirror of botopink/projects'
-# scripts/git-hooks/lib/runners/vscode-extension.sh.
+# runner-standalone.sh — the pre-commit gate of the vscode-extension.
+#
+# Sourced by scripts/git-hooks/pre-commit. It is the only runner: it needs
+# nothing outside this repository. Stages: conflict markers in staged files,
+# then `npm test` (bootstrapping node_modules once).
 set -euo pipefail
 
 RED='\033[0;31m'

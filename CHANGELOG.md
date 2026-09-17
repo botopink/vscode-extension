@@ -6,6 +6,11 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ### Fixed
 
+- **The pre-commit hook is self-contained.** The dead delegation to a meta
+  workspace runner is gone, and `AGENTS.md` documents the install
+  (`git config core.hooksPath scripts/git-hooks`) instead of a
+  `scripts/install-hooks.sh` that exists in no repository.
+
 - **Snippets and grammar match the parser.** The `*fn` snippet (removed syntax)
   is now `iterator`, expanding to `#[@iterator] fn …`; the `struct` snippet is
   gone (`record` is the declaration); the `external` snippet emits

@@ -261,22 +261,20 @@ Spec: [`../../tasks/v0.beta.18/specs/module-auto-tag.md`](../../tasks/v0.beta.18
 
 ## Local gate
 
-`scripts/git-hooks/pre-commit` is the tracked source of truth for the
-local pre-commit gate. Install with `scripts/install-hooks.sh` from
-the [botopink/projects][meta] meta workspace (or symlink directly
-when the extension is cloned standalone). The shim auto-detects the
-mode:
+`scripts/git-hooks/pre-commit` is the tracked pre-commit gate. It is
+self-contained: it sources `scripts/git-hooks/lib/runner-standalone.sh`
+from this repository and reaches nothing outside it, so a standalone
+clone, a checkout inside the botopink meta workspace and a worktree run
+the same gate. Install it once per clone:
 
-- **Nested under the meta** — delegates to
-  `scripts/git-hooks/lib/runners/vscode-extension.sh` in the meta.
-- **Standalone clone** — sources `scripts/git-hooks/lib/runner-standalone.sh`,
-  the self-contained mirror of the same gate.
+```sh
+git config core.hooksPath scripts/git-hooks
+```
 
-The gate runs `npm test --silent`. On a first run after a fresh
-clone, the bootstrap path runs `npm ci` once and writes a marker
-under `node_modules/.botopink-installed` so subsequent runs skip the
-install (same contract as [`scripts/test-vscode.sh`][test-vscode]).
-If `npm` is missing the gate prints a yellow warning and exits 0.
-
-[meta]: https://github.com/botopink/projects
-[test-vscode]: https://github.com/botopink/projects/blob/feat/scripts/test-vscode.sh
+`core.hooksPath` is per clone and applies to every worktree of it. The
+gate checks staged files for conflict markers, then runs
+`npm test --silent`. On a first run after a fresh clone it runs `npm ci`
+once and writes a marker under `node_modules/.botopink-installed` so
+subsequent runs skip the install. If `npm` is missing the gate prints a
+yellow warning and exits 0. Never commit with `--no-verify`; fix the red
+instead.
