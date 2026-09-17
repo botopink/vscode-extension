@@ -172,7 +172,9 @@ the host file a one-line delegation so the tested code is the shipped code.
   surface keywords are the strings matched there. When you add or remove a
   keyword, update `syntaxes/botopink.tmLanguage.json` and
   `test/lexerKeywords.json` (the unit suite and the CI `compiler` job fail
-  otherwise). `const` and `struct` are not keywords and must not be listed.
+  otherwise). `const` and `struct` are not keywords and must not be listed, nor
+  are the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
+  `set` (identifiers since botopink-lang `ecac19d`).
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /

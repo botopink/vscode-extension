@@ -74,7 +74,7 @@ fails when the pin drifts from the lexer:
 | Group | Patterns |
 |---|---|
 | Control keywords | `if`, `else`, `case`, `loop`, `for`, `break`, `continue`, `yield`, `return`, `try`, `catch`, `throw`, `await`, `is` |
-| Declaration keywords | `fn`, `val`, `var`, `pub`, `private`, `mod`, `record`, `enum`, `interface`, `type`, `implement`, `extend`, `extends`, `delegate`, `declare`, `macro`, `use`, `from`, `import`, `new`, `opaque`, `default`, `derive`, `test`, `assert`, `syntax`, `comptime`, `auto`, `set`, `get`, `as` |
+| Declaration keywords | `fn`, `val`, `var`, `pub`, `mod`, `record`, `enum`, `interface`, `type`, `implement`, `extend`, `extends`, `delegate`, `declare`, `use`, `from`, `import`, `new`, `default`, `test`, `assert`, `syntax`, `comptime`, `as` |
 | Language constants | `true`, `false`, `null`, `Self` |
 | Effect annotations | `#[@<effect>]` blocks (`#[@result]` / `#[@future]` / `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`) — `@name` scoped as `entity.name.function.attribute` (same path as `#[@External.<targert>(...)]`) |
 | Attributes | `#[@External.<Target>(…)](…), …]` blocks — `@name` scoped as `entity.name.function.attribute` |

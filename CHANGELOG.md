@@ -12,6 +12,9 @@ All notable changes to the Botopink VS Code extension are documented here.
   `#[@External.Node(…), @External.Erlang(…)]` instead of a garbled mix of old
   and new forms. The grammar no longer highlights `struct`, `const` or the `*fn`
   prefix, and now highlights `is`.
+- **The seven dead keywords are plain identifiers.** `auto`, `derive`, `get`,
+  `macro`, `opaque`, `private` and `set` left the compiler's keyword table; the
+  grammar no longer highlights them and `test/lexerKeywords.json` drops them.
 - **Test runs never forward a target `botopink test` refuses.** With `beam` or
   `wasm` active, the Test Explorer, CodeLens "Run test" and the `test` task run
   on `commonJS` (the UI paths show a warning) instead of failing with the CLI's

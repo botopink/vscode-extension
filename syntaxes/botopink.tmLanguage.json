@@ -39,7 +39,7 @@
         },
         {
           "name": "keyword.declaration.botopink",
-          "match": "\\b(fn|val|var|pub|private|mod|record|enum|interface|type|implement|extend|extends|delegate|declare|macro|use|from|import|new|opaque|default|derive|test|assert|syntax|comptime|auto|set|get|as)\\b"
+          "match": "\\b(fn|val|var|pub|mod|record|enum|interface|type|implement|extend|extends|delegate|declare|use|from|import|new|default|test|assert|syntax|comptime|as)\\b"
         },
         {
           "name": "constant.language.botopink",
