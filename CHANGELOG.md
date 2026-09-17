@@ -7,13 +7,14 @@ All notable changes to the Botopink VS Code extension are documented here.
 ### Changed
 
 - **The 1.0.4-beta surface.** The grammar highlights `type` and `behavior` as
-  declarations and no longer `record`, `enum`, `interface`, `delegate` or `new`;
-  `when` as a `case`-arm guard; `#(` tuples, `.Variant` shorthand, `|` union types,
-  `unknown`, `@Future`/`@AsyncGenerator`; `any` is gone. Snippets: `type` (fields or
-  variants), `behavior`, `case` with `Pattern { … }` arms, `loop (condition)`,
-  `#[@result] fn … -> @Result<T, E>`. `test/lexerKeywords.json` follows the new lexer —
-  `npm run compiler-check` against botopink-lang fails until the surface cutover (front 12)
-  and the `new`/`delegate` removal (front 06 N27) land.
+  declarations and no longer `record`, `enum` or `interface`; `when` as a `case`-arm
+  guard; `#(` tuples, `.Variant` shorthand, `|` union types, `unknown`,
+  `@Future`/`@AsyncGenerator`; `any` is gone. Snippets: `type` (fields or variants),
+  `behavior`, `#[@result] fn … -> @Result<T, E>`. `test/lexerKeywords.json` follows the
+  botopink-lang lexer after the surface cutover (front 12); `npm run compiler-check` passes
+  against it. **Waiting for front 06** (on branch `fix/new-surface-06`): `delegate` and `new`
+  stop being keywords (N27), the `case` snippet's `Pattern { … }` arms (N22) and the
+  `loop (condition)` snippet (N26) — until then `case` keeps `pattern -> result;` arms.
 
 ### Added
 
