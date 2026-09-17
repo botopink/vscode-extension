@@ -4,6 +4,7 @@
   "description": "Support for the Botopink programming language",
   "version": "0.3.0",
   "publisher": "botopink",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/botopink/botopink-lang"

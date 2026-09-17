@@ -59,3 +59,7 @@ To produce a `.vsix` for sideloading:
 ```bash
 npm run vscode:package
 ```
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

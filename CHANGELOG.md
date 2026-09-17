@@ -4,6 +4,12 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ## Unreleased
 
+### Added
+
+- **MIT license.** `LICENSE` (`Copyright (c) 2026 Eric Fillipe and botopink
+  contributors`) and `"license": "MIT"` in `package.json`, so `vsce package`
+  no longer warns and the Marketplace listing names the license.
+
 ### Fixed
 
 - **The pre-commit hook is self-contained.** The dead delegation to a meta
