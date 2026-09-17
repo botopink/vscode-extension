@@ -74,7 +74,7 @@ fails when the pin drifts from the lexer:
 | Group | Patterns |
 |---|---|
 | Control keywords | `if`, `else`, `case`, `loop`, `for`, `break`, `continue`, `yield`, `return`, `try`, `catch`, `throw`, `await`, `is` |
-| Declaration keywords | `fn`, `val`, `var`, `pub`, `mod`, `type`, `behavior`, `implement`, `extend`, `extends`, `delegate`, `declare`, `use`, `from`, `import`, `new`, `default`, `test`, `assert`, `syntax`, `comptime`, `as` |
+| Declaration keywords | `fn`, `val`, `var`, `pub`, `mod`, `type`, `behavior`, `implement`, `extend`, `extends`, `declare`, `use`, `from`, `import`, `default`, `test`, `assert`, `syntax`, `comptime`, `as` |
 | Contextual | `when` — only as a `case`-arm guard (`Pattern when (cond) { … }`), not a lexer keyword |
 | Other scopes | `#(` tuples, `.Variant` shorthand, `\|` union types, `..` ranges and rest patterns, `unknown` as a type |
 | Language constants | `true`, `false`, `null`, `Self` |

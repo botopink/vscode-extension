@@ -173,10 +173,11 @@ the host file a one-line delegation so the tested code is the shipped code.
   keyword, update `syntaxes/botopink.tmLanguage.json` and
   `test/lexerKeywords.json` (the unit suite and the CI `compiler` job fail
   otherwise). `const` and `struct` are not keywords and must not be listed, nor
-  are `record`, `enum`, `interface` (removed by the 1.0.4-beta surface cutover), nor
+  are `delegate`, `new`, `record`, `enum`, `interface` (removed by the 1.0.4-beta surface cutover and botopink-lang front 06 N27), nor
   the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
-  `set` (identifiers since botopink-lang `ecac19d`). `delegate` and `new` stay keywords until
-  botopink-lang front 06 N27 removes them (branch `fix/new-surface-06` carries that change).
+  `set` (identifiers since botopink-lang `ecac19d`).
+  The `case` snippet keeps `pattern -> result;` arms until botopink-lang front 06 N22 lands the
+  `Pattern { … }` arm syntax (branch `fix/new-surface-06` carries that snippet).
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /

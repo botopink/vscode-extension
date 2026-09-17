@@ -165,6 +165,15 @@
     ],
     "description": "Loop over a collection"
   },
+  "Loop while": {
+    "prefix": "loopwhile",
+    "body": [
+      "loop (${1:condition}) {",
+      "\t$0",
+      "};"
+    ],
+    "description": "Loop while a condition holds (replaces while)"
+  },
   "Loop with break value": {
     "prefix": "loopmap",
     "body": [

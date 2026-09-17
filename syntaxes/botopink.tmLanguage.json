@@ -68,7 +68,7 @@
         },
         {
           "name": "keyword.declaration.botopink",
-          "match": "\\b(fn|val|var|pub|mod|type|behavior|implement|extend|extends|delegate|declare|use|from|import|new|default|test|assert|syntax|comptime|as)\\b"
+          "match": "\\b(fn|val|var|pub|mod|type|behavior|implement|extend|extends|declare|use|from|import|default|test|assert|syntax|comptime|as)\\b"
         },
         {
           "name": "constant.language.botopink",

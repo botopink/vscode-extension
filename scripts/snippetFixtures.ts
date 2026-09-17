@@ -144,6 +144,10 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     values: { 1: "xs", 2: "x", 0: "val y = x;" },
     wrap: insideFn("val xs = [1, 2, 3];"),
   },
+  "Loop while": {
+    values: { 1: "attempts < 3", 0: "attempts = attempts + 1;" },
+    wrap: insideFn("var attempts = 0;"),
+  },
   "Loop with break value": {
     values: { 1: "doubled", 2: "xs", 3: "x", 0: "x * 2" },
     wrap: insideFn("val xs = [1, 2, 3];"),

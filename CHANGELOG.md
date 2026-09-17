@@ -12,9 +12,11 @@ All notable changes to the Botopink VS Code extension are documented here.
   `@Future`/`@AsyncGenerator`; `any` is gone. Snippets: `type` (fields or variants),
   `behavior`, `#[@result] fn … -> @Result<T, E>`. `test/lexerKeywords.json` follows the
   botopink-lang lexer after the surface cutover (front 12); `npm run compiler-check` passes
-  against it. **Waiting for front 06** (on branch `fix/new-surface-06`): `delegate` and `new`
-  stop being keywords (N27), the `case` snippet's `Pattern { … }` arms (N22) and the
-  `loop (condition)` snippet (N26) — until then `case` keeps `pattern -> result;` arms.
+  against it.
+- **botopink-lang front 06 G0.** `delegate` and `new` are no longer keywords (N27); a
+  `loop (condition)` snippet (`loopwhile`) replaces `while` (N26). **Waiting for front 06
+  N22** (branch `fix/new-surface-06`): the `case` snippet's `Pattern { … }` arms — until then
+  `case` keeps `pattern -> result;` arms.
 
 ### Added
 
