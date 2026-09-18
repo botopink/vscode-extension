@@ -5,7 +5,11 @@
 //      unit tests compare the grammar against) still equals the keywords
 //      `keywordOrIdent` recognises in `compiler-core/src/lexer.zig`;
 //   2. every `snippets.json` body, expanded by its fixture, passes
-//      `botopink check` — so no snippet offers syntax the compiler rejects.
+//      `botopink check` — so no snippet offers syntax the compiler rejects;
+//   3. the grammar's `support.type.primitive` words are exactly the types
+//      `Env.registerBuiltins` registers, minus `any` (decision 8 §2.5) and plus
+//      `unknown` (decision 8 §2, registered by front 06) — so the editor never
+//      paints a word no program can name, nor leaves a real one unpainted.
 //
 // Usage:
 //   node --experimental-strip-types scripts/compilerCheck.ts \
@@ -17,7 +21,11 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { extractLexerKeywords } from "./lexerKeywords.ts";
+import {
+  extractBuiltinTypes,
+  extractLexerKeywords,
+  grammarPrimitiveTypes,
+} from "./lexerKeywords.ts";
 import { type Snippet, snippetModule } from "./snippetFixtures.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -90,6 +98,42 @@ try {
   }
 } finally {
   fs.rmSync(scratch, { recursive: true, force: true });
+}
+
+// ── 3. the grammar's primitive types are the checker's ──────────────────────
+//
+// The same defect class as 1, one rule over: a name the compiler registers
+// nowhere painted `type [defaultLibrary]` teaches a type that does not exist
+// (`never` was painted for years; `fn c(x: never)` is `error: unknown type
+// 'never'`), and a registered one left out is silently plain text.
+//
+// Two deliberate deltas, both from decision 8, both asserted here so they
+// cannot rot into an accident:
+//   - `any` is registered (the unconstrained error channel of `@Future<T, E =
+//     any>`) but §2.5 gives the user no `any`, so the grammar must not paint it;
+//   - `unknown` is §2's type, painted ahead of front 06 registering it.
+const envSource = fs.readFileSync(
+  path.join(lang, "modules", "compiler-core", "src", "comptime", "env.zig"),
+  "utf8",
+);
+const grammar = JSON.parse(
+  fs.readFileSync(path.join(repoRoot, "syntaxes", "botopink.tmLanguage.json"), "utf8"),
+) as unknown;
+const expectedTypes = [
+  ...extractBuiltinTypes(envSource).filter((t) => t !== "any"),
+  "unknown",
+].sort();
+const paintedTypes = grammarPrimitiveTypes(grammar);
+if (JSON.stringify(paintedTypes) !== JSON.stringify(expectedTypes)) {
+  const extra = paintedTypes.filter((t) => !expectedTypes.includes(t));
+  const missing = expectedTypes.filter((t) => !paintedTypes.includes(t));
+  fail(
+    "the grammar's primitive-type list is out of date with Env.registerBuiltins:" +
+      (extra.length ? `\n  painted but registered nowhere: ${extra.join(" ")}` : "") +
+      (missing.length ? `\n  registered but not painted: ${missing.join(" ")}` : ""),
+  );
+} else {
+  console.log(`ok primitive types match (${paintedTypes.length})`);
 }
 
 function stripAnsi(text: string): string {

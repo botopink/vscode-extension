@@ -189,9 +189,10 @@ begin/end nesting are both silent when only the regex is read.
   `set` (identifiers since botopink-lang `ecac19d`).
   The `case` snippet keeps `pattern -> result;` arms until botopink-lang front 06 N22 lands the
   `Pattern { … }` arm syntax (branch `fix/new-surface-06` carries that snippet). Re-measured at
-  botopink-lang `0e5ff66` (front 14): `case n { 1 { "one" } _ { "other" } }` is still
-  `error: Unexpected token`, so `npm run compiler-check` would fail on the new arms. Every other
-  snippet is already on the 1.0.3 surface.
+  botopink-lang `0e5ff66`, and again at `2b098eda` (front 14's closeout):
+  `case n { 1 { "one" } _ { "other" } }` is still `error: Unexpected token` while
+  `case n { 1 -> "one"; _ -> "other"; }` checks green, so `npm run compiler-check`
+  would fail on the new arms. Every other snippet is already on the 1.0.3 surface.
   The tuple rule is a **begin/end** block, not a bare `#\(` match: it scopes the closing `)` and
   paints a written type's labels as `variable.other.property.botopink` (decision 8 §6). Its
   `#parenGroup` include is what keeps a nested `(…)` — `#(f(1), 2)`, `#((1 + 2), 3)` — from closing

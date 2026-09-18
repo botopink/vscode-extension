@@ -161,6 +161,28 @@ test("grammar: `unknown` is a primitive type and `any` is not a word we paint", 
   assert.equal(scope("val a: any = x;", "any"), "");
 });
 
+test("grammar: every primitive the checker registers is painted, and nothing else", () => {
+  // `Env.registerBuiltins` (compiler-core/src/comptime/env.zig), minus `Self`
+  // and `any`, plus `unknown`. `npm run compiler-check` compares the two lists
+  // against a real checkout; this pins what the tokenizer actually does with
+  // them, which a list comparison cannot see.
+  for (const t of [
+    "i8", "i16", "i32", "i64", "isize",
+    "u8", "u16", "u32", "u64", "usize",
+    "f32", "f64", "bool", "string", "void", "v128", "noreturn", "unknown",
+  ]) {
+    assert.equal(
+      scope(`val a: ${t} = x;`, t),
+      "support.type.primitive.botopink",
+      t,
+    );
+  }
+
+  // `never` is registered nowhere — `fn c(x: never)` is `error: unknown type
+  // 'never'` — and used to be painted as a standard-library type.
+  assert.notEqual(scope("val a: never = x;", "never"), "support.type.primitive.botopink");
+});
+
 test("grammar: `|` is a union type, apart from `||` and `|>`", () => {
   assert.equal(
     scope("val v: i32 | string = 1;", "|"),

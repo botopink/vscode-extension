@@ -288,8 +288,8 @@
         },
         {
           "name": "support.type.primitive.botopink",
-          "match": "\\b(i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|string|void|never|unknown)\\b",
-          "comment": "`unknown` is the type of any value not yet checked; there is no `any`"
+          "match": "\\b(i8|i16|i32|i64|isize|u8|u16|u32|u64|usize|f32|f64|bool|string|void|v128|noreturn|unknown)\\b",
+          "comment": "the types `Env.registerBuiltins` registers (compiler-core/src/comptime/env.zig), minus `Self` (a constant.language rule of its own), minus `any` \u2014 decision 8 \u00a72.5 gives the user no `any` \u2014 plus `unknown`, decision 8 \u00a72's type, painted ahead of front 06 registering it. `never` was here and is registered nowhere: `fn c(x: never)` is `error: unknown type 'never'`, so the editor was marking a word no program can name as a standard-library type. Pinned by `npm run compiler-check`."
         },
         {
           "name": "entity.name.type.botopink",

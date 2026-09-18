@@ -17,6 +17,15 @@ All notable changes to the Botopink VS Code extension are documented here.
   `loop (condition)` snippet (`loopwhile`) replaces `while` (N26). **Waiting for front 06
   N22** (branch `fix/new-surface-06`): the `case` snippet's `Pattern { … }` arms — until then
   `case` keeps `pattern -> result;` arms.
+- **The primitive types are the checker's again.** `never` was painted
+  `support.type.primitive` and is registered nowhere — `fn c(x: never)` is
+  `error: unknown type 'never'` — so the editor marked a word no program can name
+  as a standard-library type, while `isize`, `usize`, `v128` and `noreturn`, which
+  the checker does register, were plain text. The rule is now
+  `Env.registerBuiltins` minus `Self` and minus `any` (decision 8 §2.5), plus
+  `unknown` (decision 8 §2). `npm run compiler-check` compares the two lists
+  against a real botopink-lang checkout, the way it already pins the lexer
+  keywords, and `test/grammar.test.ts` tokenizes every one of them.
 - **A `#(…)` tuple is a real block, and its labels are properties.** The tuple rule was a bare
   `#(` match that scoped nothing else; it is now a begin/end block that scopes the closing `)`
   and paints a written type's labels (`#(name: string, pop: i32)`) as
