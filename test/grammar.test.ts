@@ -11,6 +11,7 @@
 // `is`, `when` guards, `loop`, `A...B` pattern ranges, `#[@effect]`.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -31,6 +32,9 @@ before(async () => {
 /** The scope the grammar gives the `nth` occurrence of `word` on `line`. */
 const scope = (line: string, word: string, nth = 0): string =>
   scopeOfWord(tokenize, line, word, nth);
+
+const readJson = (rel: string): unknown =>
+  JSON.parse(fs.readFileSync(path.join(repoRoot, rel), "utf8"));
 
 // ── declarations ─────────────────────────────────────────────────────────────
 
@@ -144,6 +148,25 @@ test("grammar: `A...B` is one inclusive-range operator, `..` stays iteration", (
 
   assert.equal(scope("loop (0..n) { i -> }", ".."), "keyword.operator.range.botopink");
   assert.equal(scope("val p = #(0, ..);", ".."), "keyword.operator.range.botopink");
+});
+
+test("grammar: the `case` snippet's arms are `Pattern { body }`, and paint as such", () => {
+  // The snippet is the shape the editor teaches, so it is the shape the grammar
+  // is pinned against: a regression in `botopink.tmLanguage.json` reds here, and
+  // a snippet flipped back to the `pattern -> result;` arms reds on the `->`
+  // assertion. The compiler half — that the filled body passes `botopink check`
+  // — is `npm run compiler-check`; this half is what it paints.
+  const body = (readJson("snippets.json") as Record<string, { body: string[] }>)[
+    "Case expression"
+  ].body.join("\n");
+  assert.ok(!body.includes("->"), "the `case` snippet still writes arrow arms");
+  assert.match(body, /\$\{2:pattern\} \{ \$\{3:result\} \}/);
+  assert.match(body, /_ \{ \$\{0:fallback\} \}/);
+
+  const filled = 'case n { 1 { "one" } _ { "other" } }';
+  assert.equal(scope(filled, "case"), "keyword.control.botopink");
+  assert.equal(scope(filled, "_"), "comment.unused.botopink");
+  assert.equal(scope(filled, '"one"'), "string.quoted.double.botopink");
 });
 
 test("grammar: `when` is a guard after a pattern, an identifier anywhere else", () => {

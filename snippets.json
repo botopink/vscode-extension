@@ -131,8 +131,8 @@
     "prefix": "case",
     "body": [
       "case ${1:subject} {",
-      "\t${2:pattern} -> ${3:result};",
-      "\t_ -> ${0:fallback};",
+      "\t${2:pattern} { ${3:result} }",
+      "\t_ { ${0:fallback} }",
       "}"
     ],
     "description": "Pattern matching"

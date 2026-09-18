@@ -205,12 +205,15 @@ begin/end nesting are both silent when only the regex is read.
   are `delegate`, `new`, `record`, `enum`, `interface` (removed by the 1.0.4-beta surface cutover and botopink-lang front 06 N27), nor
   the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
   `set` (identifiers since botopink-lang `ecac19d`).
-  The `case` snippet keeps `pattern -> result;` arms until botopink-lang front 06 N22 lands the
-  `Pattern { … }` arm syntax (branch `fix/new-surface-06` carries that snippet). Re-measured at
-  botopink-lang `0e5ff66`, and again at `2b098eda` (front 14's closeout):
-  `case n { 1 { "one" } _ { "other" } }` is still `error: Unexpected token` while
-  `case n { 1 -> "one"; _ -> "other"; }` checks green, so `npm run compiler-check`
-  would fail on the new arms. Every other snippet is already on the 1.0.3 surface.
+  The `case` snippet teaches decision 8's `Pattern { body }` arms. It kept
+  `pattern -> result;` while those arms were `error: Unexpected token` (measured at
+  botopink-lang `0e5ff66` and again at `2b098eda`); botopink-lang `d0c27f6` landed the grammar and
+  the form now parses, checks and runs, so the snippet was flipped —
+  `case n { 1 { "one" } _ { "other" } }` passes `npm run compiler-check` with the fixture it
+  already had. Both arm forms parse at `c2dd780`; the snippet teaches the one decision 8 §5.1
+  writes. `test/grammar.test.ts` pins the snippet's body *and* what it paints, so a grammar
+  regression or a flip back to the arrow arms reds `npm test`. Every other snippet is already on
+  the 1.0.3 surface.
   The tuple rule is a **begin/end** block, not a bare `#\(` match: it scopes the closing `)` and
   paints a written type's labels as `variable.other.property.botopink` (decision 8 §6). Its
   `#parenGroup` include is what keeps a nested `(…)` — `#(f(1), 2)`, `#((1 + 2), 3)` — from closing

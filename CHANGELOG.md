@@ -26,10 +26,14 @@ All notable changes to the Botopink VS Code extension are documented here.
   `behavior`, `#[@result] fn … -> @Result<T, E>`. `test/lexerKeywords.json` follows the
   botopink-lang lexer after the surface cutover (front 12); `npm run compiler-check` passes
   against it.
+- **The `case` snippet teaches `Pattern { body }` arms.** botopink-lang `d0c27f6` landed
+  decision 8 §5's grammar, so `case n { 1 { "one" } _ { "other" } }` now parses, checks and
+  runs where it used to be `error: Unexpected token`. The snippet was flipped, with the
+  fixture it already had, and `npm run compiler-check` compiles the filled body.
+  `test/grammar.test.ts` pins the arm shape so a grammar regression — or a flip back to the
+  arrow arms — reds `npm test`.
 - **botopink-lang front 06 G0.** `delegate` and `new` are no longer keywords (N27); a
-  `loop (condition)` snippet (`loopwhile`) replaces `while` (N26). **Waiting for front 06
-  N22** (branch `fix/new-surface-06`): the `case` snippet's `Pattern { … }` arms — until then
-  `case` keeps `pattern -> result;` arms.
+  `loop (condition)` snippet (`loopwhile`) replaces `while` (N26).
 - **The primitive types are the checker's again.** `never` was painted
   `support.type.primitive` and is registered nowhere — `fn c(x: never)` is
   `error: unknown type 'never'` — so the editor marked a word no program can name
