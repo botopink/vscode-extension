@@ -177,7 +177,10 @@ the host file a one-line delegation so the tested code is the shipped code.
   the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
   `set` (identifiers since botopink-lang `ecac19d`).
   The `case` snippet keeps `pattern -> result;` arms until botopink-lang front 06 N22 lands the
-  `Pattern { … }` arm syntax (branch `fix/new-surface-06` carries that snippet).
+  `Pattern { … }` arm syntax (branch `fix/new-surface-06` carries that snippet). Re-measured at
+  botopink-lang `0e5ff66` (front 14): `case n { 1 { "one" } _ { "other" } }` is still
+  `error: Unexpected token`, so `npm run compiler-check` would fail on the new arms. Every other
+  snippet is already on the 1.0.3 surface.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /

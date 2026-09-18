@@ -125,7 +125,7 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     wrap: moduleLevel,
   },
   Behavior: {
-    values: { 1: "Shape", 2: "area", 0: " -> i32;" },
+    values: { 1: "Shape", 2: "area", 3: "i32", 0: "" },
     wrap: moduleLevel,
   },
   "Case expression": {
@@ -168,7 +168,7 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
         insideFn()(rendered),
       ].join("\n"),
   },
-  "Implement for record": {
+  "Implement for type": {
     values: {
       1: "PointShape",
       2: "Shape",

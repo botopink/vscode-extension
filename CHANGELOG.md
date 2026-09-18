@@ -17,6 +17,11 @@ All notable changes to the Botopink VS Code extension are documented here.
   `loop (condition)` snippet (`loopwhile`) replaces `while` (N26). **Waiting for front 06
   N22** (branch `fix/new-surface-06`): the `case` snippet's `Pattern { … }` arms — until then
   `case` keeps `pattern -> result;` arms.
+- **The `behavior` snippet writes a complete member.** `fn method(self: Self) -> type;` — a
+  behavior member with no body ends with `;`; the snippet used to stop after `)` and leave the
+  `;` to the user. The `implement` snippet is named and described for the 1.0.3 surface
+  ("Implement a behavior for a type"), and the README says `behavior` methods, not `interface`
+  ones.
 
 ### Added
 

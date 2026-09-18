@@ -121,10 +121,11 @@
     "prefix": "behavior",
     "body": [
       "behavior ${1:Name} {",
-      "\tfn ${2:method}(self: Self)$0",
+      "\tfn ${2:method}(self: Self) -> ${3:type};",
+      "\t$0",
       "}"
     ],
-    "description": "Behavior declaration"
+    "description": "Behavior declaration (a member with no body ends with ;)"
   },
   "Case expression": {
     "prefix": "case",
@@ -197,15 +198,15 @@
     ],
     "description": "Error handling with fallback"
   },
-  "Implement for record": {
+  "Implement for type": {
     "prefix": "implement",
     "body": [
-      "val ${1:Name} = implement ${2:Interface} for ${3:Type} {",
+      "val ${1:Name} = implement ${2:Behavior} for ${3:Type} {",
       "\tfn ${4:method}(self: Self) {",
       "\t\t$0",
       "\t}",
       "}"
     ],
-    "description": "Implement an interface for a type"
+    "description": "Implement a behavior for a type"
   }
 }
