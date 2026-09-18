@@ -46,6 +46,18 @@ test("grammar: `type` and `behavior` are declaration keywords, and name a type",
   assert.equal(scope("pub behavior Show { }", "Show"), "entity.name.type.botopink");
 });
 
+test("grammar: an enum-shaped `type` with sections names every level a type", () => {
+  // Decision 8 §5.3b: a section declares a type of its own (`Token.Text`,
+  // `Token.Text.Size`), written with the same path its values use. Every name
+  // on the way down is a type name, and a payload variant's label is a label.
+  const line = "type Token { Text { Bold, Size { Sm } }, Hover(inner: Token[]) }";
+  assert.equal(scope(line, "type"), "keyword.declaration.botopink");
+  for (const name of ["Token", "Text", "Bold", "Size", "Sm", "Hover"]) {
+    assert.equal(scope(line, name), "entity.name.type.botopink", name);
+  }
+  assert.equal(scope(line, "inner"), "variable.parameter.botopink");
+});
+
 test("grammar: the removed spellings are painted as no keyword", () => {
   // `record`, `enum` and `interface` left the lexer with the surface cutover;
   // `new` and `delegate` with front 06 N27; `while` with decision 8 §10. None
