@@ -128,8 +128,11 @@ module that imports another leaf module uses the explicit `.ts` extension too
 The suite also guards what the extension ships, without a compiler: every
 grammar control/declaration keyword must be in `test/lexerKeywords.json`, every
 pinned lexer keyword must be highlighted, and every `snippets.json` entry must
-have a fixture in `scripts/snippetFixtures.ts`. The compiler-backed half runs in
-CI (below) and locally with
+have a fixture in `scripts/snippetFixtures.ts`. One test reaches outside when it
+can — `grammar: the pinned keywords equal keywordOrIdent, when a botopink-lang
+checkout is reachable` re-extracts the lexer table from `$BOTOPINK_LANG` or the
+sibling `../botopink-lang` and **skips** when neither exists, so a standalone
+clone stays green. The compiler-backed half runs in CI (below) and locally with
 
 ```bash
 npm run compiler-check -- --lang ../botopink-lang   # needs a built zig-out/bin/botopink
@@ -183,7 +186,22 @@ begin/end nesting are both silent when only the regex is read.
   surface keywords are the strings matched there. When you add or remove a
   keyword, update `syntaxes/botopink.tmLanguage.json` and
   `test/lexerKeywords.json` (the unit suite and the CI `compiler` job fail
-  otherwise). `const` and `struct` are not keywords and must not be listed, nor
+  otherwise). **Three things assert the pin, because a keyword is added in
+  botopink-lang and not here**, so a push-triggered job never runs on the
+  change that breaks it — `unknown` drifted for exactly that reason and shipped
+  red: (1) the `compiler` job of `.github/workflows/test.yml`, which now also
+  runs **daily** (`schedule`) and on `workflow_dispatch`, not only on push/PR;
+  (2) `npm test`'s `grammar: the pinned keywords equal keywordOrIdent, when a
+  botopink-lang checkout is reachable`, which re-extracts `keywordOrIdent` from
+  `$BOTOPINK_LANG` or the sibling `../botopink-lang` and skips when neither is
+  there; (3) `npm run compiler-check -- --lang <checkout>` by hand.
+  `unknown` is the one keyword painted as a **type**: it has a rule of its own in
+  `repository.keywords` carrying the `support.type.primitive.botopink` scope, so
+  `grammar: every lexer keyword is highlighted by some keyword rule` (which reads
+  only `repository.keywords`) sees it while the colour stays the one every other
+  primitive gets. It is listed twice on purpose — the keyword pin here and
+  `registerBuiltins` in `repository.constants` — and both lists are asserted.
+  `const` and `struct` are not keywords and must not be listed, nor
   are `delegate`, `new`, `record`, `enum`, `interface` (removed by the 1.0.4-beta surface cutover and botopink-lang front 06 N27), nor
   the dead keywords `auto`, `derive`, `get`, `macro`, `opaque`, `private` and
   `set` (identifiers since botopink-lang `ecac19d`).
@@ -235,7 +253,7 @@ Two workflows under `.github/workflows/`:
 
 | Workflow      | Trigger          | What                                                                  |
 | ------------- | ---------------- | --------------------------------------------------------------------- |
-| `test.yml`    | push / PR        | job `test`: `npm ci && npm test`; job `compiler`: builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. |
+| `test.yml`    | push / PR / daily `schedule` / `workflow_dispatch` | job `test`: `npm ci && npm test`; job `compiler`: builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. The `schedule` trigger is what catches a keyword or a primitive type added in botopink-lang with no push on this side. |
 | `release.yml` | tag push `v*`    | `package` → `publish-gh` → conditional `publish-marketplace`.         |
 
 **`VSCE_PAT` secret.** The `publish-marketplace` job is gated on

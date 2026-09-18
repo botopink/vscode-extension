@@ -2,7 +2,11 @@
 #
 # - `test` — the pure-fn suite (`npm test`, `node --test test/*.test.ts`); no
 #   platform dependency. It also pins the grammar keywords against
-#   `test/lexerKeywords.json` and requires a fixture for every snippet.
+#   `test/lexerKeywords.json`, requires a fixture for every snippet, and — when
+#   a botopink-lang checkout is reachable (`BOTOPINK_LANG` or the sibling
+#   `../botopink-lang`) — re-extracts `keywordOrIdent` and compares. On this
+#   runner no checkout is reachable, so that one skips and `compiler` is what
+#   asserts it.
 # - `compiler` — builds `botopink` from botopink-lang and runs
 #   `scripts/compilerCheck.ts`: `test/lexerKeywords.json` must equal the
 #   lexer's `keywordOrIdent` table, and every `snippets.json` body, expanded by
@@ -21,6 +25,13 @@ on:
     branches: [main, feat]
   pull_request:
     branches: [main, feat]
+  # A keyword is added in botopink-lang, not here, so a push-only trigger never
+  # runs on the change that breaks the pin — `unknown` drifted for exactly that
+  # reason. The daily run catches it with no push on either side; `npm test`
+  # catches it on a developer's machine when a checkout is reachable.
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: test-${{ github.ref }}

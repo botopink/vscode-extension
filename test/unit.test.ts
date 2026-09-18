@@ -36,7 +36,10 @@ import {
   writeTargetConfig,
 } from "../src/targetConfig.ts";
 import { resolveBinPath } from "../src/pathResolve.ts";
-import { grammarKeywordRules } from "../scripts/lexerKeywords.ts";
+import {
+  extractLexerKeywords,
+  grammarKeywordRules,
+} from "../scripts/lexerKeywords.ts";
 import {
   renderSnippet,
   type Snippet,
@@ -290,6 +293,45 @@ test("grammar: every lexer keyword is highlighted by some keyword rule", () => {
   const highlighted = new Set([...grammarRules.values()].flat());
   const missing = [...lexerKeywords].filter((w) => !highlighted.has(w));
   assert.deepEqual(missing, []);
+});
+
+// The pin above is only as good as the moment it was taken: `unknown` became a
+// keyword in botopink-lang and the drift shipped, because the extension's own
+// CI runs on an extension push and the keyword landed in the *other*
+// repository. This test closes the local half — when a botopink-lang checkout
+// is reachable (`BOTOPINK_LANG`, or the sibling `../botopink-lang` of the meta
+// workspace), `npm test` re-extracts `keywordOrIdent` and compares. With no
+// checkout it skips, so a standalone clone still runs green; the scheduled
+// `compiler` job in `.github/workflows/test.yml` is the half that does not
+// depend on anybody having one.
+function reachableLangCheckout(): string | undefined {
+  const candidates = [
+    process.env.BOTOPINK_LANG,
+    path.resolve(repoRoot, "..", "botopink-lang"),
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (fs.existsSync(path.join(candidate, "modules/compiler-core/src/lexer.zig"))) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
+test("grammar: the pinned keywords equal keywordOrIdent, when a botopink-lang checkout is reachable", (t) => {
+  const lang = reachableLangCheckout();
+  if (!lang) {
+    t.skip("no botopink-lang checkout (set BOTOPINK_LANG to one)");
+    return;
+  }
+  const actual = extractLexerKeywords(
+    fs.readFileSync(path.join(lang, "modules/compiler-core/src/lexer.zig"), "utf8"),
+  );
+  assert.deepEqual(
+    actual,
+    [...lexerKeywords].sort(),
+    `test/lexerKeywords.json is out of date with keywordOrIdent in ${lang}`,
+  );
 });
 
 test("snippets: every snippet has a compiler-check fixture that fills it", () => {

@@ -73,6 +73,11 @@
         {
           "name": "constant.language.botopink",
           "match": "\\b(true|false|null|Self)\\b"
+        },
+        {
+          "comment": "`unknown` is a lexer keyword (`keywordOrIdent`) that reads as a type, so it is pinned in test/lexerKeywords.json and must be highlighted by a rule of this repository — `grammarKeywordRules` reads only `repository.keywords`. The scope is the one `constants` gives every other primitive, so the painting is unchanged: this rule shadows the `support.type.primitive` alternation with the identical name, and both lists stay asserted (the keyword pin here, `registerBuiltins` there).",
+          "name": "support.type.primitive.botopink",
+          "match": "\\b(unknown)\\b"
         }
       ]
     },

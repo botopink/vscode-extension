@@ -4,6 +4,19 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- **`unknown` is a pinned keyword again, and the pin cannot drift unnoticed.**
+  `unknown` became a lexer keyword in botopink-lang (`6c849ae`) and
+  `test/lexerKeywords.json` never followed, so `npm run compiler-check` — the CI
+  `compiler` job — was red while `npm test` was green. The word is pinned, and it
+  is highlighted by a rule of its own carrying the `support.type.primitive`
+  scope, so the colour is unchanged. Three guards now assert the pin instead of
+  one: the `compiler` job also runs daily and on demand (a keyword is added in
+  the *other* repository, where a push here never happens); `npm test` compares
+  against `keywordOrIdent` whenever a botopink-lang checkout is reachable
+  (`$BOTOPINK_LANG` or the sibling `../botopink-lang`), and skips when it is not.
+
 ### Changed
 
 - **The 1.0.4-beta surface.** The grammar highlights `type` and `behavior` as
