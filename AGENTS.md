@@ -231,7 +231,13 @@ begin/end nesting are both silent when only the regex is read.
   paints a written type's labels as `variable.other.property.botopink` (decision 8 §6). Its
   `#parenGroup` include is what keeps a nested `(…)` — `#(f(1), 2)`, `#((1 + 2), 3)` — from closing
   the tuple at the first inner `)`. In `operators`, `\.\.\.` **must** precede `\.\.`: a pattern
-  range `1...9` otherwise reads as a `..` plus an unscoped dot.
+  range `1...9` otherwise reads as a `..` plus an unscoped dot. By the same rule
+  `\?\.` and `\?\?` **must** precede `\?`: `a ?? b` (decision 28, botopink-lang
+  `fb230e5`) otherwise paints as two `keyword.operator.optional` tokens — the
+  scope of the `?` in `?i32` — so a theme cannot tell the operator from the type
+  marker. `xs[0]` / `xs[0..2]` (decision 30) need no rule of their own: the
+  brackets are unscoped punctuation, as in an array literal, and the `..` is the
+  range rule.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /

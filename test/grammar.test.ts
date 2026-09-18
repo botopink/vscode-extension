@@ -150,6 +150,26 @@ test("grammar: `A...B` is one inclusive-range operator, `..` stays iteration", (
   assert.equal(scope("val p = #(0, ..);", ".."), "keyword.operator.range.botopink");
 });
 
+test("grammar: `??` is one operator, and not the `?` of an optional type", () => {
+  // `a ?? b` gives an optional its default (decision 28, botopink-lang
+  // `fb230e5`). Without its own rule the `?` rule took the two characters one
+  // at a time — two tokens, both `keyword.operator.optional.botopink`, the
+  // scope that paints the `?` of `?i32` — so a theme could not tell an operator
+  // from a type marker. Same class as `...` over `..` above.
+  const line = "val got = maybe ?? 7;";
+  const q = tokensOf(tokenize, line).find((t) => t.text.startsWith("?"));
+  assert.ok(q, "no `?` token on the line");
+  assert.equal(q.text, "??", "the `?` rule split `??`");
+  assert.equal(q.scopes.at(-1), "keyword.operator.nullish.botopink");
+
+  // The two neighbours it must not swallow, and must not be confused with.
+  assert.equal(scope("val o: ?i32 = null;", "?"), "keyword.operator.optional.botopink");
+  assert.equal(
+    scope("val b = a?.c;", "?."),
+    "keyword.operator.optional-chaining.botopink",
+  );
+});
+
 test("grammar: the `case` snippet's arms are `Pattern { body }`, and paint as such", () => {
   // The snippet is the shape the editor teaches, so it is the shape the grammar
   // is pinned against: a regression in `botopink.tmLanguage.json` reds here, and

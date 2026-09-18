@@ -19,6 +19,14 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ### Fixed
 
+- **`??` is highlighted as one operator.** `a ?? b` — the form that gives an
+  optional its default (botopink-lang `fb230e5`) — had no rule, so the `?` rule
+  took the two characters one at a time and painted both with
+  `keyword.operator.optional.botopink`, the scope that paints the `?` of `?i32`.
+  It is now `keyword.operator.nullish.botopink`, ordered before `?` the way
+  `...` is ordered before `..`, and `test/grammar.test.ts` pins the token's
+  width, its scope, and that neither `?i32` nor `a?.c` moved.
+
 - **`unknown` is a pinned keyword again, and the pin cannot drift unnoticed.**
   `unknown` became a lexer keyword in botopink-lang (`6c849ae`) and
   `test/lexerKeywords.json` never followed, so `npm run compiler-check` — the CI

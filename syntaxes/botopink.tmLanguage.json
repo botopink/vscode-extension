@@ -172,6 +172,11 @@
           "match": "\\?\\."
         },
         {
+          "comment": "`a ?? b` — the default of an optional (decision 28, botopink-lang `fb230e5`). Must precede the `?` rule, which would otherwise take the two characters one at a time and paint both with the optional-*type* scope, so a theme colours `??` the way it colours the `?` of `?i32`.",
+          "name": "keyword.operator.nullish.botopink",
+          "match": "\\?\\?"
+        },
+        {
           "name": "keyword.operator.arrow.botopink",
           "match": "->"
         },
