@@ -3,7 +3,7 @@ import {
   flattenSymbolNodes,
   isDocumentSymbolArray as isDocumentSymbolArrayNode,
   isMainSymbolNode,
-  isTestSymbolNode,
+  testSymbolNodes,
 } from "./symbolNodes";
 
 /**
@@ -50,11 +50,14 @@ export function flattenSymbols(
 }
 
 /**
- * Test blocks are exposed by the LSP as `Method` symbols whose name is the test
- * string (landed in tooling-update F3).
+ * The `test "…"` blocks of a document: `Method` symbols at the **top level**.
+ * A method of a `type` / `enum` / `behavior` is a `Method` too, and is told
+ * apart by being a child of its declaration — see `./symbolNodes`.
  */
-export function isTestSymbol(symbol: vscode.DocumentSymbol): boolean {
-  return isTestSymbolNode(symbol);
+export function testSymbols(
+  symbols: vscode.DocumentSymbol[],
+): Generator<vscode.DocumentSymbol> {
+  return testSymbolNodes(symbols);
 }
 
 /** `fn main` is exposed as a `Function` symbol named `main`. */

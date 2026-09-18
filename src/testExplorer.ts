@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import * as vscode from "vscode";
 import { getBotopinkCliPath, getOutputChannel, workspaceCwd } from "./cli";
-import { fetchDocumentSymbols, flattenSymbols, isTestSymbol } from "./symbols";
+import { fetchDocumentSymbols, testSymbols } from "./symbols";
 import { TargetManager } from "./target";
 import { testTargetFor, testTargetNotice } from "./targetConfig";
 import { parseTestOutput } from "./testOutput";
@@ -84,7 +84,7 @@ async function discoverFileTests(
   uri: vscode.Uri,
 ): Promise<void> {
   const symbols = await fetchDocumentSymbols(uri);
-  const tests = [...flattenSymbols(symbols)].filter(isTestSymbol);
+  const tests = [...testSymbols(symbols)];
 
   if (tests.length === 0) {
     controller.items.delete(uri.toString());

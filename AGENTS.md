@@ -80,7 +80,7 @@ vscode-extension/
 │   ├── cli.ts                      ← resolve `botopink` CLI path + shared OutputChannel
 │   ├── target.ts                   ← codegen-target status bar + botopink.json read/write
 │   ├── tasks.ts                    ← TaskProvider for check/build/test/format
-│   ├── symbols.ts                  ← LSP documentSymbol helpers (test / main detection)
+│   ├── symbols.ts                  ← LSP documentSymbol helpers (testSymbols / main detection)
 │   ├── codeLens.ts                 ← CodeLens "Run" / "Run test" provider
 │   ├── testExplorer.ts             ← Testing API controller + `botopink test` runner
 │   │                                 (re-exports parseTestOutput from ./testOutput)
@@ -88,7 +88,8 @@ vscode-extension/
 │   ├── testOutput.ts               ← parseTestOutput + OK/FAIL line regexes
 │   ├── taskArgs.ts                 ← argsFor / taskLabel / taskGroupKind
 │   ├── quoting.ts                  ← quoteArg (POSIX shell quoting)
-│   ├── symbolNodes.ts              ← flatten + test/main predicates + DocumentSymbol[] guard
+│   ├── symbolNodes.ts              ← flatten (with and without the parent) + test/main
+│   │                                 predicates + DocumentSymbol[] guard
 │   ├── targetConfig.ts             ← TARGETS (build/run) + TEST_TARGETS (test) +
 │   │                                 testTargetFor + resolve/parse/write botopink.json target
 │   └── pathResolve.ts              ← resolveBinPath (CLI/LSP executable resolution)
@@ -159,9 +160,21 @@ begin/end nesting are both silent when only the regex is read.
   itself — all semantic features come from `botopink-lsp`. The TextMate
   grammar is a separate, purely lexical view used only for syntax
   colouring. CodeLens and Test-Explorer targets come from LSP
-  `documentSymbol`s (test blocks are `Method` symbols named after the test
-  string; `fn main` is a `Function` symbol named `main`), never from
-  reading source. Pass/fail comes from shelling the `botopink` CLI.
+  `documentSymbol`s, never from reading source. Pass/fail comes from shelling
+  the `botopink` CLI.
+- **A `test "…"` block is recognised by its place in the tree, not by its
+  symbol kind.** It is a `Method` symbol named after the test string — and so is
+  a method of a `type`, an `enum` or a `behavior`, since botopink-lang's language
+  server started emitting the right kind for those (decision 7 of its 1.0.5-beta
+  milestone; `language-server/src/engine.zig` `collectChildren`). The LSP
+  protocol has no `Test` kind, so the tree is what separates them: a `test` block
+  is a child of the **file**, a method is a child of the declaration it belongs
+  to. `src/symbolNodes.ts` is where that lives — `isTestSymbolNode(symbol,
+  parent)` takes the parent as a **required** argument, and `testSymbolNodes` is
+  the only accessor the Test Explorer and CodeLens use. Never filter a flattened
+  walk by kind alone: that lists every method in the workspace as a runnable
+  test, which is the defect this replaced. `fn main` is still a `Function`
+  symbol named `main`.
 - **CLI coupling points** (keep in sync when the CLI changes):
   - the `$botopink` problem-matcher regexp in `package.json`
     (`contributes.problemMatchers`) tracks `botopink check`'s

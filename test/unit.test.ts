@@ -15,12 +15,14 @@ import { argsFor, taskGroupKind, taskLabel } from "../src/taskArgs.ts";
 import { quoteArg } from "../src/quoting.ts";
 import {
   flattenSymbolNodes,
+  flattenSymbolNodesWithParent,
   isDocumentSymbolArray,
   isMainSymbolNode,
   isTestSymbolNode,
   type SymbolNode,
   SYMBOL_KIND_FUNCTION,
   SYMBOL_KIND_METHOD,
+  testSymbolNodes,
 } from "../src/symbolNodes.ts";
 import {
   DEFAULT_TARGET,
@@ -180,6 +182,11 @@ function sym(
   return { kind, name, children };
 }
 
+// The two other `vscode.SymbolKind` values these scenarios need (0-based, as in
+// the editor's enum): a `type` is `Struct`, its fields are `Field`.
+const SYMBOL_KIND_FIELD = 7;
+const SYMBOL_KIND_STRUCT = 22;
+
 test("flattenSymbolNodes: depth-first traversal of a nested tree, in order", () => {
   const tree = [
     sym(SYMBOL_KIND_FUNCTION, "a", [
@@ -192,13 +199,60 @@ test("flattenSymbolNodes: depth-first traversal of a nested tree, in order", () 
   assert.deepEqual(names, ["a", "a.1", "a.2", "a.2.1", "b"]);
 });
 
-test("isTestSymbolNode / isMainSymbolNode classify Method ⇒ test, Function 'main' ⇒ main", () => {
-  assert.equal(isTestSymbolNode(sym(SYMBOL_KIND_METHOD, "a test")), true);
-  assert.equal(isTestSymbolNode(sym(SYMBOL_KIND_FUNCTION, "main")), false);
+test("isTestSymbolNode: a `Method` is a test at the top level and a method under a type", () => {
+  const type = sym(SYMBOL_KIND_STRUCT, "Point");
+  assert.equal(isTestSymbolNode(sym(SYMBOL_KIND_METHOD, "a test"), undefined), true);
+  assert.equal(isTestSymbolNode(sym(SYMBOL_KIND_METHOD, "norm"), type), false);
+  assert.equal(isTestSymbolNode(sym(SYMBOL_KIND_FUNCTION, "main"), undefined), false);
+});
 
+test("isMainSymbolNode classifies Function 'main' ⇒ main", () => {
   assert.equal(isMainSymbolNode(sym(SYMBOL_KIND_FUNCTION, "main")), true);
   assert.equal(isMainSymbolNode(sym(SYMBOL_KIND_FUNCTION, "other")), false);
   assert.equal(isMainSymbolNode(sym(SYMBOL_KIND_METHOD, "main")), false);
+});
+
+test("testSymbolNodes: only the top-level test blocks, never a type's methods", () => {
+  // The document the Test Explorer used to get wrong: a `type` with two methods
+  // and two `test "…"` blocks. Before decision 7 the server emitted `Function`
+  // for the methods to keep this list right; now both are `Method` and the tree
+  // is what separates them.
+  const tree = [
+    sym(SYMBOL_KIND_STRUCT, "Point", [
+      sym(SYMBOL_KIND_FIELD, "x"),
+      sym(SYMBOL_KIND_METHOD, "norm"),
+      sym(SYMBOL_KIND_METHOD, "scaled"),
+    ]),
+    sym(SYMBOL_KIND_METHOD, "norm of a unit vector is 1"),
+    sym(SYMBOL_KIND_FUNCTION, "main"),
+    sym(SYMBOL_KIND_METHOD, "scaling doubles the norm"),
+  ];
+  assert.deepEqual(
+    [...testSymbolNodes(tree)].map((s) => s.name),
+    ["norm of a unit vector is 1", "scaling doubles the norm"],
+  );
+  // The flatten walk sees all four `Method`s — which is exactly why the filter
+  // may not be applied to it.
+  assert.equal(
+    [...flattenSymbolNodes(tree)].filter((s) => s.kind === SYMBOL_KIND_METHOD).length,
+    4,
+  );
+});
+
+test("flattenSymbolNodesWithParent: every symbol carries the declaration it sits in", () => {
+  const type = sym(SYMBOL_KIND_STRUCT, "Point", [sym(SYMBOL_KIND_METHOD, "norm")]);
+  const tree = [type, sym(SYMBOL_KIND_METHOD, "a test")];
+  assert.deepEqual(
+    [...flattenSymbolNodesWithParent(tree)].map(({ symbol, parent }) => [
+      symbol.name,
+      parent?.name,
+    ]),
+    [
+      ["Point", undefined],
+      ["norm", "Point"],
+      ["a test", undefined],
+    ],
+  );
 });
 
 test("isDocumentSymbolArray distinguishes DocumentSymbol[] from SymbolInformation[]", () => {

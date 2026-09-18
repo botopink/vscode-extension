@@ -3,7 +3,7 @@ import {
   fetchDocumentSymbols,
   flattenSymbols,
   isMainSymbol,
-  isTestSymbol,
+  testSymbols,
 } from "./symbols";
 
 export const RUN_TEST_COMMAND = "botopink.runTest";
@@ -38,8 +38,13 @@ export class BotopinkCodeLensProvider implements vscode.CodeLensProvider {
       return [];
     }
     const lenses: vscode.CodeLens[] = [];
+    // `testSymbols` is the only thing that decides what a test is (a top-level
+    // `Method`); the flatten walk is kept for `fn main`, which can sit inside a
+    // `mod` block. A method of a `type` is a `Method` symbol too and must not
+    // get a "Run test" lens.
+    const tests = new Set<vscode.DocumentSymbol>(testSymbols(symbols));
     for (const symbol of flattenSymbols(symbols)) {
-      if (isTestSymbol(symbol)) {
+      if (tests.has(symbol)) {
         lenses.push(
           new vscode.CodeLens(symbol.range, {
             title: "$(play) Run test",

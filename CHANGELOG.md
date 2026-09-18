@@ -4,6 +4,19 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ## Unreleased
 
+### Changed
+
+- **A test block is recognised by its declaration, not by its symbol kind.** The
+  language server now reports a type's, an enum's and a behavior's methods as
+  `SymbolKind.Method`, which is what the kind means and what the outline should
+  show; until now they were `Function` purely because the Test Explorer read
+  every `Method` symbol as a `test "…"` block. The extension tells the two apart
+  by the tree instead — a `test` block is a child of the file, a method is a
+  child of its declaration — so the Test Explorer and the "▶ Run test" CodeLens
+  still list only test blocks, and the outline finally shows methods as methods.
+  Requires botopink-lang with decision 7 landed; the two repositories move
+  together.
+
 ### Fixed
 
 - **`unknown` is a pinned keyword again, and the pin cannot drift unnoticed.**
