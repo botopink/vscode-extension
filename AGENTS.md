@@ -97,10 +97,12 @@ vscode-extension/
 │   │                                 through `botopink check` (`npm run compiler-check`)
 │   ├── snippetFixtures.ts          ← per-snippet tabstop values + wrapper → a checkable module
 │   ├── lexerKeywords.ts            ← keywordOrIdent extraction + grammar keyword-rule parsing
+│   ├── tokenize.ts                 ← loads the grammar into vscode-textmate/oniguruma → scopes per token
 │   └── git-hooks/                  ← tracked pre-commit gate
 └── test/
     ├── package.json                ← `{"type":"module"}` for Node's native-TS test runner
     ├── lexerKeywords.json          ← pinned `keywordOrIdent` words (checked against lexer.zig in CI)
+    ├── grammar.test.ts             ← what the grammar actually paints, tokenized for real
     └── unit.test.ts                ← pure-function scenarios (no vscode host)
 ```
 
@@ -138,6 +140,15 @@ any snippet, expanded by its fixture, does not pass `botopink check`. Like
 `zig build test-libs`, `test-vscode` is **not** wired into `zig build test` —
 it needs `node`/`npm` on PATH. When you touch a pure helper, keep its wrapper in
 the host file a one-line delegation so the tested code is the shipped code.
+
+**A grammar rule is proved by the scopes it produces, never by reading its
+regex.** `test/grammar.test.ts` loads `syntaxes/botopink.tmLanguage.json` into
+the tokenizer VS Code itself uses (`vscode-textmate` over `vscode-oniguruma`,
+both devDependencies) through `scripts/tokenize.ts`, and asserts the innermost
+scope at a given offset. Rule order, lookbehind and begin/end nesting therefore
+behave in the test exactly as they do in the editor. Add a case there for every
+rule you add or reorder — the `...` before `..` ordering and the tuple's
+begin/end nesting are both silent when only the regex is read.
 
 ## Conventions
 
@@ -181,6 +192,11 @@ the host file a one-line delegation so the tested code is the shipped code.
   botopink-lang `0e5ff66` (front 14): `case n { 1 { "one" } _ { "other" } }` is still
   `error: Unexpected token`, so `npm run compiler-check` would fail on the new arms. Every other
   snippet is already on the 1.0.3 surface.
+  The tuple rule is a **begin/end** block, not a bare `#\(` match: it scopes the closing `)` and
+  paints a written type's labels as `variable.other.property.botopink` (decision 8 §6). Its
+  `#parenGroup` include is what keeps a nested `(…)` — `#(f(1), 2)`, `#((1 + 2), 3)` — from closing
+  the tuple at the first inner `)`. In `operators`, `\.\.\.` **must** precede `\.\.`: a pattern
+  range `1...9` otherwise reads as a `..` plus an unscoped dot.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
   `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /

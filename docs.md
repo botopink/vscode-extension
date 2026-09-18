@@ -147,8 +147,9 @@ the language is stable enough for public release, publish with
 
 | You want to add… | Where it goes |
 |---|---|
-| A new keyword to highlight | `syntaxes/botopink.tmLanguage.json` (`keywords` repo) + `AGENTS.md` |
-| A new snippet | `snippets.json` |
+| A new keyword to highlight | `syntaxes/botopink.tmLanguage.json` (`keywords` repo) + `test/lexerKeywords.json` + `AGENTS.md` |
+| Any other grammar rule | the matching repository entry, **plus a case in `test/grammar.test.ts`** — it tokenizes for real, so a rule is proved by the scope it produces, not by its regex |
+| A new snippet | `snippets.json` + a fixture in `scripts/snippetFixtures.ts` (`npm run compiler-check` runs it through `botopink check`) |
 | A new LSP feature consumed by the client | nothing here — implement in `../botopink-lang/modules/language-server/src/engine.zig` and the standard LSP capability negotiation will surface it |
 | A new VS Code command (e.g. "compile current file") | `package.json` `contributes.commands` + a handler in `src/extension.ts` |
 | A new user-tunable setting | `package.json` `contributes.configuration.properties` + read it in `src/extension.ts` |

@@ -86,9 +86,41 @@
       }
     },
     "tuple": {
-      "comment": "tuple literal and tuple type `#(…)` — `#(1, \"a\")`, `#(name: string, pop: i32)`; must not be confused with the `#[…]` attribute block",
-      "name": "punctuation.definition.tuple.begin.botopink",
-      "match": "#\\("
+      "comment": "tuple literal and tuple type `#(…)` — `#(1, \"a\")`, `#(name: string, pop: i32)`; must not be confused with the `#[…]` attribute block. A label of a written tuple type is a name for the compiler (decision 8 §6), so it is scoped as a property; `#parenGroup` keeps a nested `(…)` from closing the tuple early.",
+      "begin": "#\\(",
+      "end": "\\)",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.tuple.begin.botopink"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.tuple.end.botopink"
+        }
+      },
+      "patterns": [
+        {
+          "name": "variable.other.property.botopink",
+          "match": "\\b[a-z_][A-Za-z0-9_]*\\s*(?=:)"
+        },
+        {
+          "include": "#parenGroup"
+        },
+        {
+          "include": "$self"
+        }
+      ]
+    },
+    "parenGroup": {
+      "comment": "a bare `(…)` group, so a nested parenthesis inside a `#(…)` tuple does not close it",
+      "begin": "\\(",
+      "end": "\\)",
+      "patterns": [
+        {
+          "include": "$self"
+        }
+      ]
     },
     "enumMember": {
       "comment": "`.Variant` shorthand — `.Some(v)`, `.None` — when the enum comes from the value's type (a qualified `Option.Some` is coloured by the type rule)",
@@ -141,6 +173,11 @@
         {
           "name": "keyword.operator.pipe.botopink",
           "match": "\\|>"
+        },
+        {
+          "name": "keyword.operator.range.inclusive.botopink",
+          "match": "\\.\\.\\.",
+          "comment": "`A...B` — an inclusive pattern range, both ends included (decision 8 §5.2). Must precede the `..` rule, which would otherwise take two of the three dots and leave the third unscoped."
         },
         {
           "name": "keyword.operator.range.botopink",

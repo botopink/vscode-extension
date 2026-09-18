@@ -17,6 +17,11 @@ All notable changes to the Botopink VS Code extension are documented here.
   `loop (condition)` snippet (`loopwhile`) replaces `while` (N26). **Waiting for front 06
   N22** (branch `fix/new-surface-06`): the `case` snippet's `Pattern { … }` arms — until then
   `case` keeps `pattern -> result;` arms.
+- **A `#(…)` tuple is a real block, and its labels are properties.** The tuple rule was a bare
+  `#(` match that scoped nothing else; it is now a begin/end block that scopes the closing `)`
+  and paints a written type's labels (`#(name: string, pop: i32)`) as
+  `variable.other.property.botopink`, the scope the manifest already maps the LSP's `property`
+  token to. A nested `(…)` no longer closes the tuple early.
 - **The `behavior` snippet writes a complete member.** `fn method(self: Self) -> type;` — a
   behavior member with no body ends with `;`; the snippet used to stop after `)` and leave the
   `;` to the user. The `implement` snippet is named and described for the 1.0.3 surface
@@ -25,6 +30,15 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ### Added
 
+- **`A...B` pattern ranges highlight.** An inclusive pattern range (botopink-lang decision 8 §5.2)
+  is one `keyword.operator.range.inclusive.botopink` token; the `..` rule used to take two of the
+  three dots and leave the third unscoped. `..` stays iteration and slicing (`0..n`, `#(0, ..)`).
+- **The grammar is tested by tokenizing, not by reading regexes.** `test/grammar.test.ts` loads
+  the grammar into `vscode-textmate` over `vscode-oniguruma` (new devDependencies) through
+  `scripts/tokenize.ts` and asserts the scope the editor would show: `type` / `behavior`
+  declarations, the removed spellings staying unhighlighted, tuples and their labels, `A...B`
+  versus `..`, `when` guards versus a `when` identifier, `unknown`, union `|` versus `||` / `|>`,
+  every `loop` form, and `#[@effect]` annotations.
 - **MIT license.** `LICENSE` (`Copyright (c) 2026 Eric Fillipe and botopink
   contributors`) and `"license": "MIT"` in `package.json`, so `vsce package`
   no longer warns and the Marketplace listing names the license.
