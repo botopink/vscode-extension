@@ -109,8 +109,9 @@ try {
 //
 // Two deliberate deltas, both from decision 8, both asserted here so they
 // cannot rot into an accident:
-//   - `any` is registered (the unconstrained error channel of `@Future<T, E =
-//     any>`) but §2.5 gives the user no `any`, so the grammar must not paint it;
+//   - `any` is registered (it was the unconstrained error channel of the
+//     retired `@Future<T, E = any>`) but §2.5 gives the user no `any`, so the
+//     grammar must not paint it;
 //   - `unknown` is §2's type, painted ahead of front 06 registering it.
 const envSource = fs.readFileSync(
   path.join(lang, "modules", "compiler-core", "src", "comptime", "env.zig"),

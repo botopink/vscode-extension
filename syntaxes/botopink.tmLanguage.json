@@ -19,6 +19,9 @@
       "include": "#caseGuard"
     },
     {
+      "include": "#contextualKeywords"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -60,11 +63,32 @@
         }
       ]
     },
+    "contextualKeywords": {
+      "comment": "Contextual words of the effect surface (botopink-lang 1.0.10-beta front 24, decisions 118-128). None is a lexer keyword, so they live outside `repository.keywords` (whose words must all be in `keywordOrIdent`) and are painted only in their position: `async` immediately before `{` (an `async { … }` block, worth a `@Task`), `iter` / `stream` immediately before `loop` / `while` / `for` (a prefixed loop, worth an `@Iterator` / `@Stream`). Anywhere else — `g.iter()`, `val stream = 1`, `http.stream(…)`, `import {async} from \"std\"`, `async.allOf(…)` — they stay identifiers. `try await` / `for await` need no rule: `try`, `for` and `await` are lexer keywords.",
+      "patterns": [
+        {
+          "match": "(?<![\\w.])(async)(?=\\s*\\{)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.async.botopink"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\w.])(iter|stream)(?=\\s+(?:loop|while|for)\\b)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.generator.botopink"
+            }
+          }
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {
           "name": "keyword.control.botopink",
-          "match": "\\b(if|else|case|loop|for|break|continue|yield|return|try|catch|throw|await|is)\\b"
+          "match": "\\b(if|else|case|loop|while|for|break|continue|yield|return|try|catch|throw|await|is)\\b"
         },
         {
           "name": "keyword.declaration.botopink",
@@ -152,6 +176,11 @@
         }
       },
       "patterns": [
+        {
+          "comment": "The effect annotations front 24 retired (decisions 118-128): the return wrapper (`-> @Result` / `@Task` / `@Component` / `@Iterator` / `@Stream`) decides the effect now, so an `#[@result]` and its siblings are no longer current syntax and are painted as deprecated. Must precede the generic attribute rule.",
+          "name": "invalid.deprecated.effect-annotation.botopink",
+          "match": "@(result|future|use|generator|resultGenerator|futureGenerator|iterator|asyncGenerator|context)\\b"
+        },
         {
           "name": "entity.name.function.attribute.botopink",
           "match": "@[a-zA-Z_][A-Za-z0-9_]*"
@@ -330,9 +359,14 @@
     "builtins": {
       "patterns": [
         {
-          "comment": "builtin `@`-prefixed types — must precede the generic @ident rule",
+          "comment": "builtin `@`-prefixed types — must precede the generic @ident rule. The effect wrappers are the return types of front 24 (`@Result`, `@Task`, `@Component<C, T>`, `@Iterator`, `@Stream`); `@Context<C>` is what a context owner `implement`s.",
           "name": "support.type.builtin.botopink",
-          "match": "@(Expr|Result|Option|Iterator|Future|AsyncGenerator)\\b"
+          "match": "@(Expr|Result|Option|Task|Component|Iterator|Stream|Context)\\b"
+        },
+        {
+          "comment": "wrappers front 24 retired: `@Future` → `@Task<@Result<…>>`, `@Use` → `@Component<C, T>`, `@Generator` / `@ResultGenerator` → `@Iterator<…>`, `@FutureGenerator` / `@AsyncGenerator` / `@AsyncIterator` → `@Stream<…>`. Painted as deprecated, never as a current type; must precede the generic @ident rule.",
+          "name": "invalid.deprecated.builtin.botopink",
+          "match": "@(Future|Use|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator)\\b"
         },
         {
           "name": "support.function.builtin.botopink",

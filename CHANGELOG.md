@@ -6,6 +6,31 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ### Changed
 
+- **Effects by return type (botopink-lang front 24, decisions 118–128).** The
+  return wrapper decides the effect, so the grammar paints `@Task`, `@Component`,
+  `@Stream` and `@Context` as builtin types next to `@Result` and `@Iterator`, and
+  paints the retired forms `invalid.deprecated` instead of as current syntax: the
+  effect annotations `#[@result]`, `#[@future]`, `#[@use]`, `#[@generator]`,
+  `#[@resultGenerator]`, `#[@futureGenerator]` (and the older `#[@iterator]`,
+  `#[@asyncGenerator]`, `#[@context]`), and the wrappers `@Future`, `@Use`,
+  `@Generator`, `@ResultGenerator`, `@FutureGenerator`, `@AsyncGenerator`,
+  `@AsyncIterator`. The contextual words are keywords only in place — `async`
+  before `{`, `iter` / `stream` before `loop` / `while` / `for` — while `g.iter()`,
+  `val stream = 1`, `http.stream(…)` and `import {async} from "std"` stay names;
+  `try await` and `for await` are two keywords each. Snippets: `result`
+  (`-> @Result<T, E>` with no annotation), `task` (`-> @Task<T>`), `component`
+  (`-> @Component<ElementBase, T>`, a hook or a component), `iterator`
+  (`-> @Iterator<T>` with no annotation), `streamfn` (`-> @Stream<T>`), `iter for`,
+  `stream for` and `async { … }`; the loop snippets are `for (xs) { x -> }`,
+  `while (cond) { }` and `loop { }` (decision 105), replacing `loop (xs)`,
+  `loopwhile` and `loopmap`. `test/grammar.test.ts` pins every rule and that no
+  snippet writes a retired form. `npm run compiler-check` passes these snippets
+  only once front 24 has landed in botopink-lang.
+- **`while` is a keyword again.** Decision 105 brought it back to
+  `keywordOrIdent`; it is highlighted as a control keyword and pinned in
+  `test/lexerKeywords.json` (the pin test was red against botopink-lang
+  `82e32e36`).
+
 - **A test block is recognised by its declaration, not by its symbol kind.** The
   language server now reports a type's, an enum's and a behavior's methods as
   `SymbolKind.Method`, which is what the kind means and what the outline should

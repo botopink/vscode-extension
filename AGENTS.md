@@ -240,13 +240,32 @@ begin/end nesting are both silent when only the regex is read.
   range rule.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
-  `#[@<effect>]` annotation prefixes (`#[@result]` / `#[@future]` /
-  `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`),
-  the builtin `@`-types (`@Expr`/`@Result`/`@Option`/`@Iterator`),
-  `|>` pipeline, `?.` optional chaining, and `${…}` string interpolation
-  holes. Retired syntax gets no rule and no snippet: the legacy `*fn`
-  prefix (`deprecated-star-fn`, removed in v0.beta.19) is gone from both, and
-  the iterator snippet uses `#[@iterator] fn`.
+  the builtin `@`-types (`@Expr`/`@Option`/`@Context` and the effect wrappers
+  `@Result`/`@Task`/`@Component`/`@Iterator`/`@Stream`), `|>` pipeline, `?.`
+  optional chaining, and `${…}` string interpolation holes.
+  **Effects are decided by the return type** (botopink-lang front 24, decisions
+  118–128): there is no effect annotation. The contextual words live in
+  `repository.contextualKeywords`, **not** `repository.keywords` — they are not
+  in `keywordOrIdent`, and the unit suite requires every word of a `keywords`
+  rule to be. `async` is painted only before `{`, `iter` / `stream` only before
+  `loop` / `while` / `for`, each by a lookahead (and a `(?<![\w.])` lookbehind so
+  a member access never reads as one); `g.iter()`, `val stream = 1`,
+  `http.stream(…)` and `import {async} from "std"` stay names, and
+  `test/grammar.test.ts` pins both halves. The removed forms are scoped
+  `invalid.deprecated.*` rather than left unscoped, so an old file shows what to
+  migrate: the effect annotations inside `#[…]` (`@result`, `@future`, `@use`,
+  `@generator`, `@resultGenerator`, `@futureGenerator`, `@iterator`,
+  `@asyncGenerator`, `@context`) and the wrappers `@Future`, `@Use`,
+  `@Generator`, `@ResultGenerator`, `@FutureGenerator`, `@AsyncGenerator`,
+  `@AsyncIterator`. No snippet writes any of them, nor the retired
+  `loop (…)` forms (a grammar test asserts it); the effect snippets are one per
+  wrapper (`result`, `task`, `component`, `iterator`, `streamfn`) plus
+  `iter for`, `stream for` and `async`, and the loop snippets are `for`,
+  `while` and `loop` (decision 105). Until botopink-lang front 24 lands on the
+  `BOTOPINK_LANG_REF` the CI `compiler` job builds, `npm run compiler-check`
+  fails on exactly the snippets that spell the new surface. The legacy `*fn`
+  prefix (`deprecated-star-fn`, removed in v0.beta.19) has no rule and no
+  snippet.
 - **`botopink-lsp` is launched with no args** — see
   [`../botopink-lang/modules/language-server/src/main.zig`](../botopink-lang/modules/language-server/src/main.zig).
   Do not add `lsp`/`serve`/etc. subcommands here.

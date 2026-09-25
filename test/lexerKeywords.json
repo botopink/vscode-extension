@@ -35,5 +35,6 @@
   "use",
   "val",
   "var",
+  "while",
   "yield"
 ]

@@ -73,14 +73,14 @@ fails when the pin drifts from the lexer:
 
 | Group | Patterns |
 |---|---|
-| Control keywords | `if`, `else`, `case`, `loop`, `for`, `break`, `continue`, `yield`, `return`, `try`, `catch`, `throw`, `await`, `is` |
+| Control keywords | `if`, `else`, `case`, `loop`, `while`, `for`, `break`, `continue`, `yield`, `return`, `try`, `catch`, `throw`, `await`, `is` |
 | Declaration keywords | `fn`, `val`, `var`, `pub`, `mod`, `type`, `behavior`, `implement`, `extend`, `extends`, `declare`, `use`, `from`, `import`, `default`, `test`, `assert`, `syntax`, `comptime`, `as` |
-| Contextual | `when` — only as a `case`-arm guard (`Pattern when (cond) { … }`), not a lexer keyword |
+| Contextual | `when` — only as a `case`-arm guard (`Pattern when (cond) { … }`); `async` — only before `{` (`keyword.control.async`); `iter` / `stream` — only before `loop` / `while` / `for` (`keyword.control.generator`). None is a lexer keyword, so they live in `repository.contextualKeywords`, not `repository.keywords`; `g.iter()`, `val stream = 1`, `http.stream(…)`, `import {async} from "std"` stay names. `try await` / `for await` are two lexer keywords each |
 | Other scopes | `#(` tuples, `.Variant` shorthand, `\|` union types, `..` ranges and rest patterns, `unknown` as a type |
 | Language constants | `true`, `false`, `null`, `Self` |
-| Effect annotations | `#[@<effect>]` blocks (`#[@result]` / `#[@future]` / `#[@iterator]` / `#[@generator]` / `#[@asyncGenerator]` / `#[@context]`) — `@name` scoped as `entity.name.function.attribute` (same path as `#[@External.<targert>(...)]`) |
+| Retired effect annotations | there are none current: the return wrapper decides the effect (botopink-lang front 24). `#[@result]` / `#[@future]` / `#[@use]` / `#[@generator]` / `#[@resultGenerator]` / `#[@futureGenerator]` / `#[@iterator]` / `#[@asyncGenerator]` / `#[@context]` inside `#[…]` are scoped `invalid.deprecated.effect-annotation` |
 | Attributes | `#[@External.<Target>(…)](…), …]` blocks — `@name` scoped as `entity.name.function.attribute` |
-| Builtin `@`-types | `@Expr`, `@Result`, `@Option`, `@Iterator` (`support.type.builtin`, matched before generic `@identifier`) |
+| Builtin `@`-types | `@Expr`, `@Option`, `@Context`, and the effect wrappers `@Result`, `@Task`, `@Component`, `@Iterator`, `@Stream` (`support.type.builtin`, matched before generic `@identifier`); the retired `@Future`, `@Use`, `@Generator`, `@ResultGenerator`, `@FutureGenerator`, `@AsyncGenerator`, `@AsyncIterator` are `invalid.deprecated.builtin` |
 | Operators | `->`, `\|>`, `..`, `?.` (optional chaining), comparison, logical, bitwise, assignment, arithmetic, `?`, `\|` |
 | Numbers | binary `0b…`, octal `0o…`, hex `0x…`, float (mantissa + `[eE][+-]?…` exponent), decimal — all support `_` separators |
 | Strings | triple-quoted `"""…"""` (multiline) and `"…"` with `\u{…}`, `\n`, `\r`, `\t`, `\\`, `\"`, `\0`, `\$` escapes; `${…}` interpolation holes highlighted as embedded code |

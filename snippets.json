@@ -72,22 +72,47 @@
   "Iterator function": {
     "prefix": "iterator",
     "body": [
-      "#[@iterator]",
       "fn ${1:name}(${2:args}) -> @Iterator<${3:T}> {",
       "\tyield $0;",
       "}"
     ],
-    "description": "Iterator function (yields values)"
+    "description": "Iterator function: the @Iterator<T> return grants yield"
+  },
+  "Stream function": {
+    "prefix": "streamfn",
+    "body": [
+      "fn ${1:name}(${2:args}) -> @Stream<${3:T}> {",
+      "\tyield $0;",
+      "}"
+    ],
+    "description": "Stream function: the @Stream<T> return grants yield and await"
   },
   "Result function": {
     "prefix": "result",
     "body": [
-      "#[@result]",
       "fn ${1:name}(${2:args}) -> @Result<${3:T}, ${4:E}> {",
       "\t$0",
       "}"
     ],
-    "description": "Fallible function: #[@result] with its @Result<T, E> return type"
+    "description": "Fallible function: the @Result<T, E> return grants throw and try"
+  },
+  "Task function": {
+    "prefix": "task",
+    "body": [
+      "fn ${1:name}(${2:args}) -> @Task<${3:T}> {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Asynchronous function: the @Task<T> return grants await"
+  },
+  "Component function": {
+    "prefix": "component",
+    "body": [
+      "fn ${1:name}(${2:args}) -> @Component<${3:ElementBase}, ${4:T}> {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Hook or component: the @Component<C, T> return grants use and await"
   },
   "External declaration": {
     "prefix": "external",
@@ -157,32 +182,59 @@
     ],
     "description": "Conditional with else"
   },
-  "Loop over collection": {
+  "For over collection": {
+    "prefix": "for",
+    "body": [
+      "for (${1:collection}) { ${2:item} ->",
+      "\t$0",
+      "};"
+    ],
+    "description": "Walk a list, a range or an iterator"
+  },
+  "While loop": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "\t$0",
+      "};"
+    ],
+    "description": "Repeat while a condition holds"
+  },
+  "Loop": {
     "prefix": "loop",
     "body": [
-      "loop (${1:collection}) { ${2:item} ->",
+      "loop {",
       "\t$0",
       "};"
     ],
-    "description": "Loop over a collection"
+    "description": "Repeat until break"
   },
-  "Loop while": {
-    "prefix": "loopwhile",
+  "Iterator loop": {
+    "prefix": "iter for",
     "body": [
-      "loop (${1:condition}) {",
-      "\t$0",
+      "val ${1:items} = iter for (${2:collection}) { ${3:item} ->",
+      "\tyield ${0:value};",
       "};"
     ],
-    "description": "Loop while a condition holds (replaces while)"
+    "description": "An @Iterator in the middle of a function: iter before loop / while / for"
   },
-  "Loop with break value": {
-    "prefix": "loopmap",
+  "Stream loop": {
+    "prefix": "stream for",
     "body": [
-      "val ${1:result} = loop (${2:collection}) { ${3:item} ->",
-      "\tbreak ${0:value};",
+      "val ${1:items} = stream for (${2:collection}) { ${3:item} ->",
+      "\tyield ${0:value};",
       "};"
     ],
-    "description": "Map via loop + break"
+    "description": "A @Stream in the middle of a function: stream before loop / while / for (the body may await)"
+  },
+  "Async block": {
+    "prefix": "async",
+    "body": [
+      "val ${1:task} = async {",
+      "\treturn ${0:value};",
+      "};"
+    ],
+    "description": "A @Task in the middle of a function: return leaves the block"
   },
   "Comptime expression": {
     "prefix": "comptime",

@@ -89,6 +89,10 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     values: { 1: "single", 2: "n: i32", 3: "i32", 0: "n" },
     wrap: moduleLevel,
   },
+  "Stream function": {
+    values: { 1: "ticks", 2: "n: i32", 3: "i32", 0: "n" },
+    wrap: moduleLevel,
+  },
   "Result function": {
     values: {
       1: "parsePort",
@@ -98,6 +102,14 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
       0: 'if (s == "") { throw "empty"; };\n\treturn 80;',
     },
     wrap: moduleLevel,
+  },
+  "Task function": {
+    values: { 1: "delayed", 2: "n: i32", 3: "i32", 0: "return n;" },
+    wrap: moduleLevel,
+  },
+  "Component function": {
+    values: { 1: "counter", 2: "start: i32", 3: "ElementBase", 4: "i32", 0: "return start;" },
+    wrap: (rendered) => ["type ElementBase(root: i32)", "", rendered, ""].join("\n"),
   },
   "External declaration": {
     values: {
@@ -140,17 +152,29 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     values: { 1: "true", 2: "1", 0: "2" },
     wrap: insideFn(),
   },
-  "Loop over collection": {
+  "For over collection": {
     values: { 1: "xs", 2: "x", 0: "val y = x;" },
     wrap: insideFn("val xs = [1, 2, 3];"),
   },
-  "Loop while": {
+  "While loop": {
     values: { 1: "attempts < 3", 0: "attempts = attempts + 1;" },
     wrap: insideFn("var attempts = 0;"),
   },
-  "Loop with break value": {
+  Loop: {
+    values: { 0: "break;" },
+    wrap: insideFn(),
+  },
+  "Iterator loop": {
     values: { 1: "doubled", 2: "xs", 3: "x", 0: "x * 2" },
     wrap: insideFn("val xs = [1, 2, 3];"),
+  },
+  "Stream loop": {
+    values: { 1: "doubled", 2: "xs", 3: "x", 0: "x * 2" },
+    wrap: insideFn("val xs = [1, 2, 3];"),
+  },
+  "Async block": {
+    values: { 1: "task", 0: "1" },
+    wrap: insideFn(),
   },
   "Comptime expression": {
     values: { 0: "1 + 2" },
@@ -160,7 +184,6 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     values: { 1: "r", 2: "parsePort()", 0: "8080" },
     wrap: (rendered) =>
       [
-        "#[@result]",
         "fn parsePort() -> @Result<i32, string> {",
         "    return 80;",
         "}",

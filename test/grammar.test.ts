@@ -8,7 +8,9 @@
 //
 // The surface under test is the 1.0.3 one (`specs/1.0.4-beta/MIGRATION.md`) plus
 // decision 8: `type` / `behavior`, `#(…)` tuples with labels, unions, `unknown`,
-// `is`, `when` guards, `loop`, `A...B` pattern ranges, `#[@effect]`.
+// `is`, `when` guards, `loop` / `while` / `for`, `A...B` pattern ranges, and the
+// effect surface of botopink-lang front 24 (the return wrapper decides the
+// effect; `async` / `iter` / `stream` are contextual words).
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import * as fs from "node:fs";
@@ -64,14 +66,14 @@ test("grammar: an enum-shaped `type` with sections names every level a type", ()
 
 test("grammar: the removed spellings are painted as no keyword", () => {
   // `record`, `enum` and `interface` left the lexer with the surface cutover;
-  // `new` and `delegate` with front 06 N27; `while` with decision 8 §10. None
-  // of them may come back as a keyword — the editor would teach a parse error.
+  // `new` and `delegate` with front 06 N27. None of them may come back as a
+  // keyword — the editor would teach a parse error. (`while` left with
+  // decision 8 §10 and came back with decision 105; it is a keyword again.)
   assert.equal(scope("val r = record { x: 1 };", "record"), "");
   assert.equal(scope("val c = enum { Red };", "enum"), "");
   assert.equal(scope("pub interface Show { }", "interface"), "");
   assert.equal(scope('throw new Error("x");', "new"), "");
   assert.equal(scope("val d = delegate;", "delegate"), "");
-  assert.equal(scope("val w = while;", "while"), "");
 });
 
 // ── tuples (decision 8 §6) ───────────────────────────────────────────────────
@@ -146,7 +148,7 @@ test("grammar: `A...B` is one inclusive-range operator, `..` stays iteration", (
   assert.equal(dots.text, "...", "`..` split the inclusive range");
   assert.equal(dots.scopes.at(-1), "keyword.operator.range.inclusive.botopink");
 
-  assert.equal(scope("loop (0..n) { i -> }", ".."), "keyword.operator.range.botopink");
+  assert.equal(scope("for (0..n) { i -> }", ".."), "keyword.operator.range.botopink");
   assert.equal(scope("val p = #(0, ..);", ".."), "keyword.operator.range.botopink");
 });
 
@@ -247,27 +249,134 @@ test("grammar: `|` is a union type, apart from `||` and `|>`", () => {
   assert.equal(scope("val b = xs |> f;", "|>"), "keyword.operator.pipe.botopink");
 });
 
-// ── control flow and effects (decision 8 §9, §10) ────────────────────────────
+// ── control flow and effects (decision 105; botopink-lang front 24) ───────────
 
-test("grammar: `loop` is a control keyword in every one of its forms", () => {
-  for (const line of [
-    "loop (xs) { x -> }",
-    "loop (0..n) { i -> }",
-    "loop (attempts < 3) { }",
-    "loop { }",
-  ]) {
-    assert.equal(scope(line, "loop"), "keyword.control.botopink", line);
+test("grammar: `loop`, `while` and `for` are control keywords in every form", () => {
+  for (const [line, word] of [
+    ["loop { }", "loop"],
+    ["while (attempts < 3) { }", "while"],
+    ["for (xs) { x -> }", "for"],
+    ["for (0..n) { i -> }", "for"],
+    ["for await (s) { x -> }", "for"],
+    ["for await (s) { x -> }", "await"],
+  ] as const) {
+    assert.equal(scope(line, word), "keyword.control.botopink", line);
   }
 });
 
-test("grammar: an `#[@effect]` annotation names its effect inside the attribute", () => {
-  for (const effect of ["@result", "@future", "@iterator", "@asyncGenerator"]) {
-    const line = `#[${effect}]`;
-    assert.equal(scope(line, effect), "entity.name.function.attribute.botopink", line);
-    assert.equal(scope(line, "#["), "punctuation.definition.attribute.botopink");
+test("grammar: `iter` / `stream` are keywords only before `loop` / `while` / `for`", () => {
+  for (const [line, word] of [
+    ["val xs = iter loop { yield 1; };", "iter"],
+    ["val xs = iter while (i > 0) { yield i; };", "iter"],
+    ["val xs = iter for (ys) { y -> yield y; };", "iter"],
+    ["val s = stream loop { yield now(); };", "stream"],
+    ["val s = stream while (more) { yield 1; };", "stream"],
+    ["val s = stream for (ids) { id -> yield try await fetchUser(id); };", "stream"],
+  ] as const) {
+    assert.equal(scope(line, word), "keyword.control.generator.botopink", line);
+    // The loop word after the prefix keeps its own scope.
+    assert.equal(
+      scope(line, line.match(/(?:iter|stream) (\w+)/)![1]),
+      "keyword.control.botopink",
+      line,
+    );
   }
+
+  // Anywhere else they are ordinary names (the guide's § 6.1 list).
+  assert.equal(scope("val it = g.iter();", "iter"), "entity.name.function.botopink");
+  assert.equal(scope("val stream = 1;", "stream"), "");
+  assert.equal(scope('val s = http.stream("x");', "stream"), "entity.name.function.botopink");
+  assert.equal(scope("val iter = stream;", "iter"), "");
+  assert.equal(scope("val iter = stream;", "stream"), "");
+  assert.equal(scope("val loops = xs.iter.loop;", "iter"), "");
+});
+
+test("grammar: `async` is a keyword only before `{`", () => {
   assert.equal(
-    scope("fn f() -> @Result<i32, string> { }", "@Result"),
+    scope("val t = async { return 1; };", "async"),
+    "keyword.control.async.botopink",
+  );
+  assert.equal(
+    scope("fn f() { return async{ return 1; }; }", "async"),
+    "keyword.control.async.botopink",
+  );
+
+  // `import {async} from "std"` and `async.allOf(…)` name the std module.
+  assert.equal(scope('import {async} from "std";', "async"), "");
+  assert.equal(scope("val all = async.allOf(ts);", "async"), "");
+  assert.equal(scope("val async = 1;", "async"), "");
+});
+
+test("grammar: `try await` is two control keywords", () => {
+  const line = "val u = try await fetchUser(1) catch null;";
+  assert.equal(scope(line, "try"), "keyword.control.botopink");
+  assert.equal(scope(line, "await"), "keyword.control.botopink");
+  assert.equal(scope(line, "catch"), "keyword.control.botopink");
+});
+
+test("grammar: the effect wrappers are builtin types", () => {
+  for (const [line, wrapper] of [
+    ["fn f() -> @Result<i32, string> { }", "@Result"],
+    ["fn f() -> @Task<@Result<User, string>> { }", "@Task"],
+    ["fn f() -> @Component<ElementBase, Element> { }", "@Component"],
+    ["fn f() -> @Iterator<i32> { }", "@Iterator"],
+    ["fn f() -> @Stream<@Result<User, string>> { }", "@Stream"],
+    ["pub type Element() implement @Context<ElementBase>;", "@Context"],
+  ] as const) {
+    assert.equal(scope(line, wrapper), "support.type.builtin.botopink", line);
+  }
+  // The inner wrapper of a nested return is a builtin too.
+  assert.equal(
+    scope("fn f() -> @Task<@Result<User, string>> { }", "@Result"),
     "support.type.builtin.botopink",
   );
+  // A user `@builtin` call is not a type.
+  assert.equal(scope("@println(1);", "@println"), "support.function.builtin.botopink");
+});
+
+test("grammar: the wrappers front 24 retired are painted deprecated, never as current types", () => {
+  for (const wrapper of [
+    "@Future",
+    "@Use",
+    "@Generator",
+    "@ResultGenerator",
+    "@FutureGenerator",
+    "@AsyncGenerator",
+    "@AsyncIterator",
+  ]) {
+    const line = `fn f() -> ${wrapper}<i32> { }`;
+    assert.equal(scope(line, wrapper), "invalid.deprecated.builtin.botopink", line);
+  }
+});
+
+test("grammar: an effect annotation is painted deprecated inside its attribute", () => {
+  for (const effect of [
+    "@result",
+    "@future",
+    "@use",
+    "@generator",
+    "@resultGenerator",
+    "@futureGenerator",
+    "@iterator",
+    "@asyncGenerator",
+    "@context",
+  ]) {
+    const line = `#[${effect}]`;
+    assert.equal(scope(line, effect), "invalid.deprecated.effect-annotation.botopink", line);
+    assert.equal(scope(line, "#["), "punctuation.definition.attribute.botopink");
+  }
+  // Host bindings stay an attribute: they are not an effect.
+  assert.equal(
+    scope('#[@External.Node("m", "f")]', "@External"),
+    "entity.name.function.attribute.botopink",
+  );
+});
+
+test("grammar: no snippet writes an effect annotation or a retired wrapper", () => {
+  const snippets = readJson("snippets.json") as Record<string, { body: string[] }>;
+  const retired =
+    /#\[@(result|future|use|generator|resultGenerator|futureGenerator|iterator|asyncGenerator|context)\b|@(Future|Use|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator)\b|\bloop \(/;
+  for (const [name, snippet] of Object.entries(snippets)) {
+    assert.doesNotMatch(snippet.body.join("\n"), retired, name);
+  }
 });
