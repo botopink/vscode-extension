@@ -89,8 +89,11 @@ jobs:
         with:
           node-version: '22'
 
+      # A plain scalar may not hold `: `; the ref goes through `env`.
       - name: Print build identity
-        run: echo "botopink-lang ref: ${{ vars.BOTOPINK_LANG_REF || 'feat' }}"
+        env:
+          BOTOPINK_LANG_REF: ${{ vars.BOTOPINK_LANG_REF || 'feat' }}
+        run: echo "botopink-lang ref - $BOTOPINK_LANG_REF"
 
       - name: zig build install
         working-directory: botopink-lang

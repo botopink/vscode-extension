@@ -63,30 +63,42 @@ jobs:
 
   publish-marketplace:
     needs: package
-    # Skip when `VSCE_PAT` is not configured (the default for a fresh fork or
-    # a contributor PR). A tag push still ships a `.vsix` via publish-gh.
-    if: ${{ secrets.VSCE_PAT != '' }}
     runs-on: ubuntu-22.04
+    # `secrets` is not available in a job-level `if:` — GitHub rejects the
+    # whole file (every push then shows a failed run with no jobs). The
+    # secret goes through `env`, which a step-level `if:` can read.
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
-      - name: Checkout
+      # Without `VSCE_PAT` (a fresh fork) the job ends after this step; a tag
+      # push still ships a `.vsix` via publish-gh.
+      - name: Marketplace token
+        id: pat
+        run: |
+          if [ -n "$VSCE_PAT" ]; then echo "set=1" >> "$GITHUB_OUTPUT"; else echo "VSCE_PAT unset: not publishing to the Marketplace"; fi
+
+      - if: steps.pat.outputs.set == '1'
+        name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install Node 20
+      - if: steps.pat.outputs.set == '1'
+        name: Install Node 20
         uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: npm ci
+      - if: steps.pat.outputs.set == '1'
+        name: npm ci
         run: npm ci
 
-      - name: Download .vsix
+      - if: steps.pat.outputs.set == '1'
+        name: Download .vsix
         uses: actions/download-artifact@v4
         with:
           name: vsix
           path: dist
 
-      - name: Publish to Marketplace
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - if: steps.pat.outputs.set == '1'
+        name: Publish to Marketplace
         run: npx --yes @vscode/vsce publish --packagePath dist/*.vsix --pat "$VSCE_PAT"

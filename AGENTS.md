@@ -297,10 +297,15 @@ Two workflows under `.github/workflows/`:
 | `test.yml`    | push / PR / daily `schedule` / `workflow_dispatch` | job `test`: `npm ci && npm test`; job `compiler`: builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. The `schedule` trigger is what catches a keyword or a primitive type added in botopink-lang with no push on this side. |
 | `release.yml` | tag push `v*`    | `package` → `publish-gh` → conditional `publish-marketplace`.         |
 
-**`VSCE_PAT` secret.** The `publish-marketplace` job is gated on
-`${{ secrets.VSCE_PAT != '' }}`. With the secret unset (fresh fork, contributor
-PR, any non-trusted runner), the job is **skipped, not failed**, and the tag
-push still produces a `.vsix` on the GitHub Release. To enable marketplace
+**`VSCE_PAT` secret.** The `publish-marketplace` job reads the secret through
+its job `env` and its first step sets `steps.pat.outputs.set`; every later step
+runs only when it is `1`. A job-level `if:` cannot name `secrets` — GitHub
+rejects the whole file, and every push (not only a tag) then shows a failed
+run with no jobs, as `test.yml` did with a `: ` inside a plain-scalar `run:`.
+Check both files with a YAML parser and keep `secrets` out of job-level `if:`.
+With the secret unset (fresh fork, contributor PR, any non-trusted runner), the
+job publishes nothing and the tag push still produces a `.vsix` on the GitHub
+Release. To enable marketplace
 publishing on a trusted repo:
 
 1. Create a Personal Access Token at
