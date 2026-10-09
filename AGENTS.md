@@ -240,7 +240,7 @@ begin/end nesting are both silent when only the regex is read.
   range rule.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
-  the builtin `@`-types (`@Expr`/`@Option`/`@Context` and the effect wrappers
+  the builtin `@`-types (`@Expr`/`@Option`/`@Renderable` and the effect wrappers
   `@Result`/`@Task`/`@Component`/`@Iterator`/`@Stream`), `|>` pipeline, `?.`
   optional chaining, and `${…}` string interpolation holes.
   **Effects are decided by the return type** (botopink-lang front 24, decisions

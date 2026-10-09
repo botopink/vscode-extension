@@ -108,8 +108,8 @@ export const SNIPPET_FIXTURES: Record<string, SnippetFixture> = {
     wrap: moduleLevel,
   },
   "Component function": {
-    values: { 1: "counter", 2: "start: i32", 3: "ElementBase", 4: "i32", 0: "return start;" },
-    wrap: (rendered) => ["type ElementBase(root: i32)", "", rendered, ""].join("\n"),
+    values: { 1: "counter", 2: "start: i32", 3: "i32", 0: "return start;" },
+    wrap: moduleLevel,
   },
   "External declaration": {
     values: {

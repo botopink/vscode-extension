@@ -359,14 +359,14 @@
     "builtins": {
       "patterns": [
         {
-          "comment": "builtin `@`-prefixed types — must precede the generic @ident rule. The effect wrappers are the return types of front 24 (`@Result`, `@Task`, `@Component<C, T>`, `@Iterator`, `@Stream`); `@Context<C>` is what a context owner `implement`s.",
+          "comment": "builtin `@`-prefixed types — must precede the generic @ident rule. The effect wrappers are the return types of front 24 (`@Result`, `@Task`, `@Component<R>`, `@Iterator`, `@Stream`); `@Renderable` is what a component's `R` `implement`s (decision 354).",
           "name": "support.type.builtin.botopink",
-          "match": "@(Expr|Result|Option|Task|Component|Iterator|Stream|Context)\\b"
+          "match": "@(Expr|Result|Option|Task|Component|Iterator|Stream|Renderable)\\b"
         },
         {
-          "comment": "wrappers front 24 retired: `@Future` → `@Task<@Result<…>>`, `@Use` → `@Component<C, T>`, `@Generator` / `@ResultGenerator` → `@Iterator<…>`, `@FutureGenerator` / `@AsyncGenerator` / `@AsyncIterator` → `@Stream<…>`. Painted as deprecated, never as a current type; must precede the generic @ident rule.",
+          "comment": "wrappers front 24 retired: `@Future` → `@Task<@Result<…>>`, `@Use` → `@Component<R>`, `@Context` → `@Renderable` (decision 354), `@Generator` / `@ResultGenerator` → `@Iterator<…>`, `@FutureGenerator` / `@AsyncGenerator` / `@AsyncIterator` → `@Stream<…>`. Painted as deprecated, never as a current type; must precede the generic @ident rule.",
           "name": "invalid.deprecated.builtin.botopink",
-          "match": "@(Future|Use|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator)\\b"
+          "match": "@(Future|Use|Context|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator)\\b"
         },
         {
           "name": "support.function.builtin.botopink",

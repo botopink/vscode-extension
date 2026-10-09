@@ -318,10 +318,10 @@ test("grammar: the effect wrappers are builtin types", () => {
   for (const [line, wrapper] of [
     ["fn f() -> @Result<i32, string> { }", "@Result"],
     ["fn f() -> @Task<@Result<User, string>> { }", "@Task"],
-    ["fn f() -> @Component<ElementBase, Element> { }", "@Component"],
+    ["fn f() -> @Component<Element> { }", "@Component"],
     ["fn f() -> @Iterator<i32> { }", "@Iterator"],
     ["fn f() -> @Stream<@Result<User, string>> { }", "@Stream"],
-    ["pub type Element() implement @Context<ElementBase>;", "@Context"],
+    ["pub type Element() implement @Renderable;", "@Renderable"],
   ] as const) {
     assert.equal(scope(line, wrapper), "support.type.builtin.botopink", line);
   }
@@ -347,6 +347,11 @@ test("grammar: the wrappers front 24 retired are painted deprecated, never as cu
     const line = `fn f() -> ${wrapper}<i32> { }`;
     assert.equal(scope(line, wrapper), "invalid.deprecated.builtin.botopink", line);
   }
+});
+
+test("grammar: the owner marker decision 354 retired is painted deprecated", () => {
+  const line = "type Element() implement @Context<ElementBase>";
+  assert.equal(scope(line, "@Context"), "invalid.deprecated.builtin.botopink", line);
 });
 
 test("grammar: an effect annotation is painted deprecated inside its attribute", () => {

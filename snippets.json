@@ -108,11 +108,11 @@
   "Component function": {
     "prefix": "component",
     "body": [
-      "fn ${1:name}(${2:args}) -> @Component<${3:ElementBase}, ${4:T}> {",
+      "fn ${1:name}(${2:args}) -> @Component<${3:T}> {",
       "\t$0",
       "}"
     ],
-    "description": "Hook or component: the @Component<C, T> return grants use and await"
+    "description": "A @Component<R> function: a component when R implements @Renderable, otherwise read with use; the return grants use and await"
   },
   "External declaration": {
     "prefix": "external",
