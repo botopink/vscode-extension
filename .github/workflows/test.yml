@@ -78,11 +78,37 @@ jobs:
         with:
           version: 0.16.0
 
-      # `botopink check` evaluates `comptime` through the Erlang host.
-      - name: Install Erlang
+      # `botopink check` evaluates `comptime` through the Erlang host, and
+      # `zig build` itself runs `erlc` (the resident comptime modules are
+      # embedded at build time), so OTP comes before the build. Decision 228:
+      # the release is the compiler's `OTP_RELEASE`
+      # (modules/manifest/src/root.zig, printed by `botopink --version`), read
+      # from the source because the compiler is not built yet; the compiler
+      # refuses any other `erl` on PATH. Ubuntu's `apt-get install erlang` is
+      # OTP 24 and is never used.
+      - name: Read the Erlang/OTP release the compiler emits for
+        id: otp
+        shell: bash
+        working-directory: botopink-lang
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y erlang
+          release="$(sed -n 's/^pub const OTP_RELEASE = "\([0-9][0-9]*\)";$/\1/p' modules/manifest/src/root.zig)"
+          [ -n "$release" ] || { echo "modules/manifest/src/root.zig declares no OTP_RELEASE (decision 228)"; exit 1; }
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+
+      - name: Install Erlang/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ steps.otp.outputs.release }}
+
+      # Decisions 227 and 228: any other release fails the job rather than
+      # checking snippets against it.
+      - name: Assert Erlang/OTP
+        shell: bash
+        env:
+          OTP: ${{ steps.otp.outputs.release }}
+        run: |
+          otp="$(erl -noshell -eval 'io:format("~s",[erlang:system_info(otp_release)]),halt().')"
+          [ "$otp" = "$OTP" ] || { echo "Erlang/OTP is '$otp', not $OTP (decisions 227, 228)"; exit 1; }
 
       - name: Install Node 22
         uses: actions/setup-node@v5

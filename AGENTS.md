@@ -294,7 +294,7 @@ Two workflows under `.github/workflows/`:
 
 | Workflow      | Trigger          | What                                                                  |
 | ------------- | ---------------- | --------------------------------------------------------------------- |
-| `test.yml`    | push / PR / daily `schedule` / `workflow_dispatch` | job `test`: `npm ci && npm test`; job `compiler`: builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. The `schedule` trigger is what catches a keyword or a primitive type added in botopink-lang with no push on this side. |
+| `test.yml`    | push / PR / daily `schedule` / `workflow_dispatch` | job `test`: `npm ci && npm test`; job `compiler`: installs Erlang/OTP at the compiler's `OTP_RELEASE` (read from `modules/manifest/src/root.zig`, `erlef/setup-beam`, asserted; decisions 227, 228), builds botopink-lang at `vars.BOTOPINK_LANG_REF` (default `feat`) and runs `npm run compiler-check`. ubuntu-22.04. The `schedule` trigger is what catches a keyword or a primitive type added in botopink-lang with no push on this side. |
 | `release.yml` | tag push `v*`    | `package` → `publish-gh` → conditional `publish-marketplace`.         |
 
 **`VSCE_PAT` secret.** The `publish-marketplace` job reads the secret through
