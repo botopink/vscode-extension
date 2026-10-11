@@ -1,5 +1,7 @@
 # vscode-extension · AGENTS.md
 
+`decisions-taken.md` is generated — from the meta repository's `specs/<milestone>/decisions-taken.md` by `scripts/decisions-split.py`; edit it there, never here.
+
 > Path: `repository/vscode-extension/`
 > Parent (workspace): [`../AGENTS.md`](../AGENTS.md) · Sibling (core): [`../botopink-lang/AGENTS.md`](../botopink-lang/AGENTS.md)
 > Sibling docs: [`./docs.md`](docs.md)
