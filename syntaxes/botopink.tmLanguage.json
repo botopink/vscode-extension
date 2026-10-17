@@ -67,6 +67,24 @@
       "comment": "Contextual words of the effect surface (botopink-lang 1.0.10-beta front 24, decisions 118-128). None is a lexer keyword, so they live outside `repository.keywords` (whose words must all be in `keywordOrIdent`) and are painted only in their position: `async` immediately before `{` (an `async { … }` block, worth a `@Task`), `iter` / `stream` immediately before `loop` / `while` / `for` (a prefixed loop, worth an `@Iterator` / `@Stream`). Anywhere else — `g.iter()`, `val stream = 1`, `http.stream(…)`, `import {async} from \"std\"`, `async.allOf(…)` — they stay identifiers. `try await` / `for await` need no rule: `try`, `for` and `await` are lexer keywords.",
       "patterns": [
         {
+          "comment": "`expr` is a parameter modifier beside `comptime` (decisions 575 (4), 578): `expr q: string`, `expr self: R`. Painted only before a parameter name and its colon; `expr` anywhere else stays an identifier. Not a lexer keyword.",
+          "match": "(?<![\\w.])(expr)(?=\\s+[a-z_][A-Za-z0-9_]*\\s*:)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.botopink"
+            }
+          }
+        },
+        {
+          "comment": "`anyvalue` and `anytype` (decision 578): types, not lexer keywords. `anytype` is the bare `type`, renamed.",
+          "match": "(?<![\\w.])(anyvalue|anytype)\\b",
+          "captures": {
+            "1": {
+              "name": "support.type.primitive.botopink"
+            }
+          }
+        },
+        {
           "match": "(?<![\\w.])(async)(?=\\s*\\{)",
           "captures": {
             "1": {
@@ -88,11 +106,11 @@
       "patterns": [
         {
           "name": "keyword.control.botopink",
-          "match": "\\b(if|else|case|loop|while|for|break|continue|yield|return|try|catch|throw|await|is)\\b"
+          "match": "\\b(if|else|case|loop|while|for|break|continue|defer|yield|return|try|catch|throw|await|is)\\b"
         },
         {
           "name": "keyword.declaration.botopink",
-          "match": "\\b(fn|val|var|pub|mod|type|behavior|implement|extend|extends|declare|use|from|import|default|test|assert|syntax|comptime|as)\\b"
+          "match": "\\b(fn|val|var|pub|mod|type|behavior|implement|extend|extends|declare|use|from|import|default|test|assert|comptime|as)\\b"
         },
         {
           "name": "constant.language.botopink",
@@ -258,6 +276,18 @@
       "comment": "Sub-language interiors (erika \"…\" SQL, html \"\"\"…\"\"\" DSL) are NOT scoped here — VSCode is a pure renderer of the LSP's semantic tokens, which override this `string.quoted` scope per-range (editor.semanticHighlighting.enabled is forced on for botopink in package.json). A plain string carries no semantic tokens and stays string-coloured. See modules/vscode-extension/AGENTS.md.",
       "patterns": [
         {
+          "comment": "The template text (decision 577): `@` + backtick opens it, a backtick closes it. It may span lines, holds its bytes raw (the only escape is a backslash-backtick) and has no `${…}` interpolation scope — a `${…}` or `{…}` inside is the template's own sub-language. It is a token of its own, distinct from `\"…\"` and from the backtick identifier (decision 561, a name between backticks, no `@`). `name @`…`` is a template call and `#[name @`…`]` an annotation (the attribute block includes this rule).",
+          "name": "string.quoted.template.botopink",
+          "begin": "@`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape.botopink",
+              "match": "\\\\`"
+            }
+          ]
+        },
+        {
           "name": "string.quoted.triple.botopink",
           "begin": "\"\"\"",
           "end": "\"\"\"",
@@ -359,14 +389,19 @@
     "builtins": {
       "patterns": [
         {
+          "comment": "`compiler` is not a keyword (decision 579): it is std's `declare val compiler: Compiler` (`compiler.bp`), imported with `import {compiler} from \"std\";`, so it is painted as a std value, like a builtin, wherever it is not a member access (`x.compiler`).",
+          "name": "support.variable.compiler.botopink",
+          "match": "(?<![\\w.])compiler\\b"
+        },
+        {
           "comment": "builtin `@`-prefixed types — must precede the generic @ident rule. The effect wrappers are the return types of front 24 (`@Result`, `@Task`, `@Component<R>`, `@Iterator`, `@Stream`); `@Renderable` is what a component's `R` `implement`s (decision 354).",
           "name": "support.type.builtin.botopink",
-          "match": "@(Expr|Result|Option|Task|Component|Iterator|Stream|Renderable)\\b"
+          "match": "@(Result|Option|Task|Component|Iterator|Stream|Renderable)\\b"
         },
         {
           "comment": "wrappers front 24 retired: `@Future` → `@Task<@Result<…>>`, `@Use` → `@Component<R>`, `@Context` → `@Renderable` (decision 354), `@Generator` / `@ResultGenerator` → `@Iterator<…>`, `@FutureGenerator` / `@AsyncGenerator` / `@AsyncIterator` → `@Stream<…>`. Painted as deprecated, never as a current type; must precede the generic @ident rule.",
           "name": "invalid.deprecated.builtin.botopink",
-          "match": "@(Future|Use|Context|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator)\\b"
+          "match": "@(Future|Use|Context|Generator|ResultGenerator|FutureGenerator|AsyncGenerator|AsyncIterator|Expr|ExprCustom|Decl|expr)\\b"
         },
         {
           "name": "support.function.builtin.botopink",

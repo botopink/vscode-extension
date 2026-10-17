@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   createTokenizer,
+  scopeAt,
   scopeOfWord,
   tokensOf,
   type Tokenize,
@@ -384,4 +385,92 @@ test("grammar: no snippet writes an effect annotation or a retired wrapper", () 
   for (const [name, snippet] of Object.entries(snippets)) {
     assert.doesNotMatch(snippet.body.join("\n"), retired, name);
   }
+});
+
+// ── the template surface (decisions 575–578) ─────────────────────────────────
+
+test("grammar: `compiler` is a std value, a member named so is not", () => {
+  assert.equal(scope("compiler.fail(\"x\");", "compiler"), "support.variable.compiler.botopink");
+  assert.equal(scope("val n = compiler.name(d);", "compiler"), "support.variable.compiler.botopink");
+  assert.equal(scope("val n = x.compiler;", "compiler"), "");
+});
+
+test("grammar: `expr` is a parameter modifier beside `comptime`, only before a parameter", () => {
+  assert.equal(
+    scope("fn sql(expr q: string) -> anyvalue { }", "expr"),
+    "keyword.declaration.botopink",
+  );
+  assert.equal(
+    scope("fn map(expr self: R, expr q: string) { }", "expr", 1),
+    "keyword.declaration.botopink",
+  );
+  assert.equal(scope("val expr = 1;", "expr"), "");
+  assert.equal(scope("val v = r.expr;", "expr"), "");
+});
+
+test("grammar: `anyvalue` and `anytype` are types", () => {
+  assert.equal(scope("fn f(expr q: string) -> anyvalue { }", "anyvalue"), "support.type.primitive.botopink");
+  assert.equal(scope("fn g(comptime t: anytype) { }", "anytype"), "support.type.primitive.botopink");
+  assert.equal(scope("val anyvalues = 1;", "anyvalues"), "");
+});
+
+test("grammar: `type<T>` is the keyword and a type name", () => {
+  assert.equal(scope("fn f(comptime t: type<T>) { }", "type"), "keyword.declaration.botopink");
+  assert.equal(scope("fn f(comptime t: type<T>) { }", "T"), "entity.name.type.botopink");
+});
+
+test("grammar: the template text @`…` is a raw string with no interpolation scope", () => {
+  const call = "val q = sql @`select ${id} from t`;";
+  assert.equal(scope(call, "select"), "string.quoted.template.botopink");
+  assert.equal(scope(call, "${id}"), "string.quoted.template.botopink");
+  assert.equal(scope(call, "id"), "string.quoted.template.botopink");
+  assert.equal(scope(call, "sql"), "");
+  // a plain string keeps its own scope and its interpolation
+  assert.equal(scope('val s = "a ${id}";', "a "), "string.quoted.double.botopink");
+  assert.equal(scope('val s = "a ${id}";', "id"), "meta.template.expression.botopink");
+
+  // the escaped backtick does not close it; the next one does
+  const esc = "val q = t @`a \\` b` + c;";
+  assert.equal(scope(esc, "\\`"), "constant.character.escape.botopink");
+  assert.equal(scope(esc, " b"), "string.quoted.template.botopink");
+  assert.equal(scope(esc, "+"), "keyword.operator.arithmetic.botopink");
+});
+
+test("grammar: the template text spans lines, raw, and a dollar-brace opens no scope", () => {
+  const lines = tokenize("val q = t @`line one\n${x} \\n {y}\nend`;");
+  assert.equal(scopeAt(lines[0], 15), "string.quoted.template.botopink");
+  assert.equal(scopeAt(lines[1], 0), "string.quoted.template.botopink");
+  assert.equal(scopeAt(lines[1], 6), "string.quoted.template.botopink");
+  assert.equal(scopeAt(lines[2], 0), "string.quoted.template.botopink");
+  assert.equal(scopeAt(lines[2], 4), "");
+});
+
+test("grammar: an annotation takes the template text", () => {
+  const line = "#[route @`/users/${id}`] fn f() { }";
+  assert.equal(scope(line, "/users/"), "string.quoted.template.botopink");
+  assert.equal(scope(line, "route"), "meta.attribute.botopink");
+  assert.equal(scope(line, "fn"), "keyword.declaration.botopink");
+});
+
+test("grammar: a backtick identifier (561) is not a template text", () => {
+  const line = "val `not-found` = 1; val q = t @`x`;";
+  assert.notEqual(scope(line, "not-found"), "string.quoted.template.botopink");
+  assert.equal(scope(line, "x"), "string.quoted.template.botopink");
+  assert.equal(scope(line, "= 1"), "keyword.operator.assignment.botopink");
+});
+
+test("grammar: @Expr, @ExprCustom, @Decl and @expr are deprecated, not builtins", () => {
+  for (const w of ["Expr", "ExprCustom", "Decl", "expr"]) {
+    assert.equal(
+      scope(`fn f(comptime a: @${w}<T>) { }`, `@${w}`),
+      "invalid.deprecated.builtin.botopink",
+      w,
+    );
+  }
+  assert.equal(scope("fn f() -> @Result<i32> { }", "@Result"), "support.type.builtin.botopink");
+});
+
+test("grammar: `defer` is a control keyword; `syntax` is an identifier", () => {
+  assert.equal(scope("defer cleanup();", "defer"), "keyword.control.botopink");
+  assert.equal(scope("fn f(syntax q: string) { }", "syntax"), "");
 });

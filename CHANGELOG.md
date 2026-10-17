@@ -6,6 +6,11 @@ All notable changes to the Botopink VS Code extension are documented here.
 
 ### Changed
 
+- **Template surface (botopink-lang 144 B-136, decisions 575-578).** The template text
+  `` @`…` `` is a raw multi-line string of its own (no `${…}` scope, `` \` `` its one escape),
+  also inside `#[name @`…`]`; `compiler` is painted as a std value (`support.variable.compiler`, decision 579), `expr` a parameter modifier, `anyvalue`
+  and `anytype` types. `syntax` and `@Expr` / `@ExprCustom` / `@Decl` / `@expr` are gone (the
+  builtins painted deprecated); `defer` joins the keyword pin.
 - **Effects by return type (botopink-lang front 24, decisions 118–128).** The
   return wrapper decides the effect, so the grammar paints `@Task`, `@Component`,
   `@Stream` and `@Context` as builtin types next to `@Result` and `@Iterator`, and

@@ -41,7 +41,7 @@ Semantic classification (semantic tokens, inlay hints, symbols, …) is
 
 The interior of a sub-language string is coloured by the **LSP's semantic
 tokens**, never by a hand-written SQL/HTML grammar — VSCode is a pure renderer
-of what the compiler computed at comptime (`@ExprCustom` → `CustomNode` →
+of what the compiler computed at comptime (a template's `compiler.custom` tree → `CustomNode` →
 `semanticTokens`). Two manifest pieces let those tokens win:
 
 - `configurationDefaults["[botopink]"]."editor.semanticHighlighting.enabled": true`
@@ -240,9 +240,24 @@ begin/end nesting are both silent when only the regex is read.
   marker. `xs[0]` / `xs[0..2]` (decision 30) need no rule of their own: the
   brackets are unscoped punctuation, as in an array literal, and the `..` is the
   range rule.
+  **The template surface (botopink-lang 144 B-136, decisions 575-578).** `expr`,
+  `anyvalue` and `anytype` are **not** in `keywordOrIdent` (the lexer reads them as identifiers;
+  the parser gives them meaning), so they are `repository.contextualKeywords` rules, not
+  `repository.keywords`: `expr` is `keyword.declaration.botopink` only before a parameter name and its colon
+  (`expr q: string`, `expr self: R`); `anyvalue` / `anytype` are `support.type.primitive.botopink`. `compiler` is no keyword (decision 579):
+  it is std's `declare val compiler: Compiler`, so `repository.builtins` paints it
+  `support.variable.compiler.botopink` unless it follows a `.`.
+  The template text `` @`…` `` is `string.quoted.template.botopink` in `repository.strings`: it spans
+  lines, is raw, has `` \` `` as its one escape and **no** `#interpolation` include, so `${…}` inside it
+  carries no scope; the `#[…]` attribute block includes `#strings`, so `` #[name @`…`] `` paints
+  too. The backtick identifier `` `name` `` (decision 561) has no `@` and no rule here, so it never
+  reads as a template text. Removed: the `syntax` modifier (no longer in the pin or the keyword rule)
+  and `@Expr` / `@ExprCustom` / `@Decl` / `@expr`, painted `invalid.deprecated.builtin.botopink`.
+  `type<T>` needs no rule (`type` is a keyword, `T` a type name). `defer` is a lexer keyword
+  painted `keyword.control.botopink` and pinned.
   Beyond plain
   keywords the grammar also scopes: `#[@External.<Target>(…)]` attribute blocks,
-  the builtin `@`-types (`@Expr`/`@Option`/`@Renderable` and the effect wrappers
+  the builtin `@`-types (`@Option`/`@Renderable` and the effect wrappers
   `@Result`/`@Task`/`@Component`/`@Iterator`/`@Stream`), `|>` pipeline, `?.`
   optional chaining, and `${…}` string interpolation holes.
   **Effects are decided by the return type** (botopink-lang front 24, decisions
