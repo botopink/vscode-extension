@@ -1,4 +1,4 @@
-Generated from botopink/projects · specs/1.0.12-beta/decisions-taken.md — edit there.
+Generated from botopink/projects · specs/1.0.12-beta/decisions-taken-steps.md — edit there.
 
 ## Language & checker
 
