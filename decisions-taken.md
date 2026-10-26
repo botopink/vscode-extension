@@ -1,4 +1,4 @@
-Generated from botopink/projects · specs/decisions-taken-steps.md — edit there.
+Generated from botopink/specs-data · specs/decisions-taken-steps.md — change it through specs-bot (answer, supersede), never here.
 
 ## Language & checker
 
