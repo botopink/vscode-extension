@@ -1,0 +1,4 @@
+//// vscode-extension — the editor extension, written in TypeScript under `src/`; its
+//// `botopink.json` carries the release version. It holds no botopink code: this entry makes the
+//// tree the package `botopink packages --list` names, so the library check loads it and finds no
+//// test instead of refusing it `load-not-a-package` (decision 1004 P3).

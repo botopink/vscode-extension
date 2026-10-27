@@ -77,6 +77,9 @@ vscode-extension/
 │   ├── botopink.tmLanguage.json    ← TextMate grammar for `.bp`
 │   └── botopink.codeblock.json     ← markdown injection for ```bp blocks
 ├── images/                         ← extension icon + language icon
+├── bp/root.bp                      ← the package entry `botopink.json` names (`"src": "bp/"`): doc
+│                                     comments alone, so the library check loads the tree and finds no
+│                                     test instead of refusing it `load-not-a-package` (decision 1004 P3)
 ├── src/
 │   ├── extension.ts                ← activate() / deactivate() / LSP client + feature wiring
 │   ├── cli.ts                      ← resolve `botopink` CLI path + shared OutputChannel
